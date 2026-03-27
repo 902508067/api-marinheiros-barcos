@@ -16,6 +16,10 @@ const marinheirosRoutes = require('./src/routes/marinheiros');
 app.use(marinheirosRoutes);
 app.listen(PORT, () => console.log(`Servidor a correr na porta ${PORT}`));
 
+const barcosRoutes = require('./src/routes/barcos');
+app.use(barcosRoutes);
+
+
 
 
 

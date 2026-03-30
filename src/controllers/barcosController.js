@@ -49,14 +49,14 @@ async function obterBarco(req, res) {
 
 // CRIAR BARCO
 async function criarBarco(req, res) {
-  const { nome, capacidade } = req.body;
+  const { nome, cor } = req.body;
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
     await conn.execute(
-      `INSERT INTO Barcos (nome, capacidade)
-       VALUES (:nome, :capacidade)`,
-      { nome, capacidade },
+      `INSERT INTO Barcos (nome, cor)
+       VALUES (:nome, :cor)`,
+      { nome, cor },
       { autoCommit: true }
     );
     await conn.close();
@@ -66,18 +66,19 @@ async function criarBarco(req, res) {
   }
 }
 
+
 // ATUALIZAR BARCO
 async function atualizarBarco(req, res) {
   const { id } = req.params;
-  const { nome, capacidade } = req.body;
+  const { nome, cor } = req.body;
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
     await conn.execute(
       `UPDATE Barcos
-       SET nome = :nome, capacidade = :capacidade
+       SET nome = :nome, cor = :cor
        WHERE id_barco = :id`,
-      { nome, capacidade, id },
+      { nome, cor, id },
       { autoCommit: true }
     );
     await conn.close();
@@ -86,6 +87,7 @@ async function atualizarBarco(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+
 
 // ELIMINAR BARCO
 async function eliminarBarco(req, res) {

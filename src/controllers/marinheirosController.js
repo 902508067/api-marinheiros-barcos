@@ -7,7 +7,9 @@ const dbConfig = {
   connectionString: process.env.DB_CONNECTION
 };
 
-// LISTAR MARINHEIROS (US002)
+// -----------------------------
+// LISTAR MARINHEIROS
+// -----------------------------
 async function listarMarinheiros(req, res) {
   try {
     const conn = await oracledb.getConnection(dbConfig);
@@ -23,9 +25,15 @@ async function listarMarinheiros(req, res) {
   }
 }
 
-// OBTER 1 MARINHEIRO (US004)
+// -----------------------------
+// OBTER MARINHEIRO
+// -----------------------------
 async function obterMarinheiro(req, res) {
   const { id } = req.params;
+
+  if (isNaN(id)) {
+    return res.status(400).json({ error: "ID inválido." });
+  }
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
@@ -47,9 +55,23 @@ async function obterMarinheiro(req, res) {
   }
 }
 
-// CRIAR MARINHEIRO (US001)
+// -----------------------------
+// CRIAR MARINHEIRO
+// -----------------------------
 async function criarMarinheiro(req, res) {
   const { nome, classificacao, idade } = req.body;
+
+  if (!nome || !classificacao || !idade) {
+    return res.status(400).json({ error: "Nome, classificação e idade são obrigatórios." });
+  }
+
+  if (isNaN(idade)) {
+    return res.status(400).json({ error: "Idade deve ser numérica." });
+  }
+
+  if (isNaN(classificacao) || classificacao < 1 || classificacao > 5) {
+    return res.status(400).json({ error: "Classificação deve ser um número entre 1 e 5." });
+  }
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
@@ -66,13 +88,43 @@ async function criarMarinheiro(req, res) {
   }
 }
 
-// ATUALIZAR MARINHEIRO (US005)
+// -----------------------------
+// ATUALIZAR MARINHEIRO
+// -----------------------------
 async function atualizarMarinheiro(req, res) {
   const { id } = req.params;
   const { nome, classificacao, idade } = req.body;
 
+  if (isNaN(id)) {
+    return res.status(400).json({ error: "ID inválido." });
+  }
+
+  if (!nome || !classificacao || !idade) {
+    return res.status(400).json({ error: "Nome, classificação e idade são obrigatórios." });
+  }
+
+  if (isNaN(idade)) {
+    return res.status(400).json({ error: "Idade deve ser numérica." });
+  }
+
+  if (isNaN(classificacao) || classificacao < 1 || classificacao > 5) {
+    return res.status(400).json({ error: "Classificação deve ser um número entre 1 e 5." });
+  }
+
   try {
     const conn = await oracledb.getConnection(dbConfig);
+
+    const check = await conn.execute(
+      `SELECT COUNT(*) AS total FROM Marinheiros WHERE id_marinheiro = :id`,
+      { id },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    );
+
+    if (check.rows[0].TOTAL === 0) {
+      await conn.close();
+      return res.status(404).json({ error: "Marinheiro não encontrado." });
+    }
+
     await conn.execute(
       `UPDATE Marinheiros
        SET nome = :nome, classificacao = :classificacao, idade = :idade
@@ -80,20 +132,44 @@ async function atualizarMarinheiro(req, res) {
       { nome, classificacao, idade, id },
       { autoCommit: true }
     );
+
     await conn.close();
     res.json({ message: "Marinheiro atualizado com sucesso!" });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 
-// ATUALIZAR APENAS A CLASSIFICAÇÃO (US005)
+// -----------------------------
+// ATUALIZAR CLASSIFICAÇÃO
+// -----------------------------
 async function atualizarClassificacao(req, res) {
   const { id } = req.params;
   const { classificacao } = req.body;
 
+  if (isNaN(id)) {
+    return res.status(400).json({ error: "ID inválido." });
+  }
+
+  if (isNaN(classificacao) || classificacao < 1 || classificacao > 5) {
+    return res.status(400).json({ error: "Classificação deve ser um número entre 1 e 5." });
+  }
+
   try {
     const conn = await oracledb.getConnection(dbConfig);
+
+    const check = await conn.execute(
+      `SELECT COUNT(*) AS total FROM Marinheiros WHERE id_marinheiro = :id`,
+      { id },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    );
+
+    if (check.rows[0].TOTAL === 0) {
+      await conn.close();
+      return res.status(404).json({ error: "Marinheiro não encontrado." });
+    }
+
     await conn.execute(
       `UPDATE Marinheiros
        SET classificacao = :classificacao
@@ -101,6 +177,7 @@ async function atualizarClassificacao(req, res) {
       { classificacao, id },
       { autoCommit: true }
     );
+
     await conn.close();
     res.json({ message: "Classificação atualizada com sucesso!" });
 
@@ -109,9 +186,15 @@ async function atualizarClassificacao(req, res) {
   }
 }
 
-// ELIMINAR MARINHEIRO (US006)
+// -----------------------------
+// ELIMINAR MARINHEIRO
+// -----------------------------
 async function eliminarMarinheiro(req, res) {
   const { id } = req.params;
+
+  if (isNaN(id)) {
+    return res.status(400).json({ error: "ID inválido." });
+  }
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
@@ -131,13 +214,18 @@ async function eliminarMarinheiro(req, res) {
       });
     }
 
-    await conn.execute(
+    const result = await conn.execute(
       `DELETE FROM Marinheiros WHERE id_marinheiro = :id`,
       { id },
       { autoCommit: true }
     );
 
     await conn.close();
+
+    if (result.rowsAffected === 0) {
+      return res.status(404).json({ error: "Marinheiro não encontrado." });
+    }
+
     res.json({ message: "Marinheiro eliminado com sucesso!" });
 
   } catch (err) {
@@ -145,9 +233,15 @@ async function eliminarMarinheiro(req, res) {
   }
 }
 
-// LISTAR POR CLASSIFICAÇÃO (US003)
+// -----------------------------
+// LISTAR POR CLASSIFICAÇÃO
+// -----------------------------
 async function listarPorClassificacao(req, res) {
   const { classificacao } = req.params;
+
+  if (isNaN(classificacao) || classificacao < 1 || classificacao > 5) {
+    return res.status(400).json({ error: "Classificação deve ser um número entre 1 e 5." });
+  }
 
   try {
     const conn = await oracledb.getConnection(dbConfig);

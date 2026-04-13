@@ -1,29 +1,31 @@
-<template>
-  <table border="1" cellpadding="8">
-    <thead>
-      <tr>
-        <th v-for="col in colunas" :key="col">{{ col }}</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      <tr v-for="item in dados" :key="item.id">
-        <td v-for="col in colunas" :key="col">{{ item[col] }}</td>
-        <td>
-          <button @click="$emit('editar', item)">Editar</button>
-          <button @click="$emit('apagar', item.id)">Apagar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</template>
-
 <script setup>
 defineProps({
   dados: Array,
   colunas: Array
 });
 
-defineEmits(["editar", "apagar"]);
+defineEmits(['delete']);
 </script>
+
+<template>
+  <table>
+    <thead>
+      <tr>
+        <th v-for="col in colunas" :key="col.key">{{ col.label }}</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr v-for="item in dados" :key="item.id_reserva">
+        <td v-for="col in colunas" :key="col.key">
+          {{ item[col.key] }}
+        </td>
+        <td>
+          <button @click="$emit('edit', item)">Editar</button>
+          <button @click="$emit('delete', item.id_reserva)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</template>

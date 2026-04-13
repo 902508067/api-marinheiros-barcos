@@ -1,95 +1,109 @@
 <script setup>
-import { ref, onMounted } from "vue";
-
-import reservasService from "../services/reservasService.js";
-import marinheirosService from "../services/marinheirosService.js";
-import barcosService from "../services/barcosService.js";
-
-import Tabela from "../components/Tabela.vue";
-import ReservaForm from "../components/ReservaForm.vue";
+import { ref, onMounted } from 'vue';
+import reservasService from '../services/reservasService';
+import barcosService from '../services/barcosService';
+import marinheirosService from '../services/marinheirosService';
+import Tabela from '../components/Tabela.vue';
+import ReservaForm from '../components/ReservaForm.vue';
+import Mensagem from '../components/Mensagem.vue';
 
 const reservas = ref([]);
-const marinheiros = ref([]);
-const barcos = ref([]);
-const selecionado = ref(null);
+const barcosMap = ref({});
+const marinheirosMap = ref({});
+const reservaSelecionada = ref(null);
 
-// -----------------------------
-// CARREGAR DADOS (RESERVAS + MARINHEIROS + BARCOS)
-// -----------------------------
-async function carregar() {
+// Mensagens de feedback
+const mensagemTexto = ref('');
+const mensagemTipo = ref('sucesso');
+
+const mostrarMensagem = (texto, tipo = 'sucesso') => {
+  mensagemTexto.value = texto;
+  mensagemTipo.value = tipo;
+};
+
+// Carregar dados iniciais
+const carregarDados = async () => {
   try {
-    const [r, m, b] = await Promise.all([
-      reservasService.listar(),
-      marinheirosService.listar(),
-      barcosService.listar()
+    const [reservasRes, barcosRes, marinheirosRes] = await Promise.all([
+      reservasService.getReservas(),
+      barcosService.getBarcos(),
+      marinheirosService.getMarinheiros()
     ]);
 
-    marinheiros.value = m.data;
-    barcos.value = b.data;
+    barcosMap.value = Object.fromEntries(
+      barcosRes.data.map(b => [b.id_barco, b.nome])
+    );
 
-    // Mapear reservas para incluir nomes
-    reservas.value = r.data.map(reserva => {
-      const marinheiro = m.data.find(x => x.ID_MARINHEIRO === reserva.ID_MARINHEIRO);
-      const barco = b.data.find(x => x.ID_BARCO === reserva.ID_BARCO);
+    marinheirosMap.value = Object.fromEntries(
+      marinheirosRes.data.map(m => [m.id_marinheiro, m.nome])
+    );
 
-      return {
-        ...reserva,
-        nome_marinheiro: marinheiro ? marinheiro.NOME : "—",
-        nome_barco: barco ? barco.NOME : "—"
-      };
-    });
-
-  } catch (err) {
-    console.error("Erro ao carregar dados:", err);
+    reservas.value = reservasRes.data.map(r => ({
+      ...r,
+      marinheiro_nome: marinheirosMap.value[r.id_marinheiro],
+      barco_nome: barcosMap.value[r.id_barco]
+    }));
+  } catch (e) {
+    mostrarMensagem("Erro ao carregar dados.", "erro");
   }
-}
+};
 
-// -----------------------------
-// EDITAR
-// -----------------------------
-function editar(item) {
-  selecionado.value = { ...item };
-}
+onMounted(carregarDados);
 
-// -----------------------------
-// APAGAR
-// -----------------------------
-async function apagar(id) {
-  await reservasService.apagar(id);
-  carregar();
-}
+// Iniciar edição
+const iniciarEdicao = (reserva) => {
+  reservaSelecionada.value = reserva;
+};
 
-// -----------------------------
-// GUARDAR (CRIAR OU ATUALIZAR)
-// -----------------------------
-async function guardar(reserva) {
-  if (reserva.ID_RESERVA) {
-    await reservasService.atualizar(reserva.ID_RESERVA, reserva);
-  } else {
-    await reservasService.criar(reserva);
+// Limpar edição
+const limparEdicao = () => {
+  reservaSelecionada.value = null;
+};
+
+// Eliminar reserva
+const eliminarReserva = async (id) => {
+  try {
+    await reservasService.deleteReserva(id);
+    mostrarMensagem("Reserva eliminada com sucesso!");
+    carregarDados();
+  } catch (e) {
+    mostrarMensagem("Erro ao eliminar reserva.", "erro");
   }
-
-  selecionado.value = null;
-  carregar();
-}
-
-onMounted(carregar);
+};
 </script>
 
 <template>
-  <h1>Gestão de Reservas</h1>
+  <div>
 
-  <ReservaForm
-    :modelo="selecionado"
-    :marinheiros="marinheiros"
-    :barcos="barcos"
-    @guardar="guardar"
-  />
+    <!-- MENSAGEM DE SUCESSO/ERRO -->
+    <Mensagem
+      v-if="mensagemTexto"
+      :texto="mensagemTexto"
+      :tipo="mensagemTipo"
+    />
 
-  <Tabela
-    :dados="reservas"
-    :colunas="['ID_RESERVA', 'nome_marinheiro', 'nome_barco', 'DATA']"
-    @editar="editar"
-    @apagar="apagar"
-  />
+    <h1>Reservas</h1>
+
+    <!-- FORMULÁRIO -->
+    <ReservaForm
+      :reserva="reservaSelecionada"
+      @reservaCriada="() => { mostrarMensagem('Reserva criada com sucesso!'); carregarDados(); }"
+      @reservaAtualizada="() => { mostrarMensagem('Reserva atualizada com sucesso!'); carregarDados(); limparEdicao(); }"
+    />
+
+    <!-- TABELA -->
+    <Tabela
+      :dados="reservas"
+      :colunas="[
+        { key: 'id_reserva', label: 'ID' },
+        { key: 'marinheiro_nome', label: 'Marinheiro' },
+        { key: 'barco_nome', label: 'Barco' },
+        { key: 'data_inicio', label: 'Início' },
+        { key: 'data_fim', label: 'Fim' }
+      ]"
+      @edit="iniciarEdicao"
+      @delete="eliminarReserva"
+    />
+
+  </div>
 </template>

@@ -12,8 +12,8 @@ async function carregar() {
   barcos.value = res.data;
 }
 
-function editar(barco) {
-  selecionado.value = { ...barco };
+function editar(item) {
+  selecionado.value = { ...item };
 }
 
 async function apagar(id) {

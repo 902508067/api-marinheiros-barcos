@@ -1,18 +1,18 @@
 import axios from "axios";
 
-const API = "http://localhost:3000";
+const API = "http://localhost:3000/barcos";
 
 export default {
   listar() {
-    return axios.get(`${API}/barcos`);
+    return axios.get(API);
   },
-  criar(data) {
-    return axios.post(`${API}/barcos`, data);
+  criar(dados) {
+    return axios.post(API, dados);
   },
-  atualizar(id, data) {
-    return axios.put(`${API}/barcos/${id}`, data);
+  atualizar(id, dados) {
+    return axios.put(`${API}/${id}`, dados);
   },
   apagar(id) {
-    return axios.delete(`${API}/barcos/${id}`);
+    return axios.delete(`${API}/${id}`);
   }
 };

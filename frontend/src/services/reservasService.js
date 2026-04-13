@@ -1,18 +1,18 @@
 import axios from "axios";
 
-const API = "http://localhost:3000";
+const API = "http://localhost:3000/reservas";
 
 export default {
   listar() {
-    return axios.get(`${API}/reservas`);
+    return axios.get(API);
   },
-  criar(data) {
-    return axios.post(`${API}/reservas`, data);
+  criar(dados) {
+    return axios.post(API, dados);
   },
-  atualizar(id, data) {
-    return axios.put(`${API}/reservas/${id}`, data);
+  atualizar(id, dados) {
+    return axios.put(`${API}/${id}`, dados);
   },
   apagar(id) {
-    return axios.delete(`${API}/reservas/${id}`);
+    return axios.delete(`${API}/${id}`);
   }
 };

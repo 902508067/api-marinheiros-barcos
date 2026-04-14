@@ -41,8 +41,8 @@ export default {
   data() {
     return {
       form: {
-        nome: this.barcoInicial.nome || "",
-        cor: this.barcoInicial.cor || ""
+        nome: this.barcoInicial.nome || this.barcoInicial.NOME || "",
+        cor: this.barcoInicial.cor || this.barcoInicial.COR || ""
       }
     };
   },

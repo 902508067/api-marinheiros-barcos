@@ -80,13 +80,23 @@ export default {
 
     abrirCriar() {
       this.isEdit = false;
-      this.barcoAtual = { NOME: "", COR: "" };
+
+      // FORM EM MINÚSCULAS
+      this.barcoAtual = { nome: "", cor: "" };
+
       this.modalAberto = true;
     },
 
     abrirEditar(barco) {
       this.isEdit = true;
-      this.barcoAtual = { ...barco };
+
+      // CONVERTER MAIÚSCULAS → minúsculas
+      this.barcoAtual = {
+        nome: barco.NOME,
+        cor: barco.COR,
+        ID_BARCO: barco.ID_BARCO
+      };
+
       this.modalAberto = true;
     },
 

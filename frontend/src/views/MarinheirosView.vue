@@ -5,8 +5,14 @@
     <Loading v-if="loading" />
 
     <div v-else class="card shadow-2 p-3 border-round">
-      <DataTable :value="marinheiros" stripedRows responsiveLayout="scroll"
-        paginator :rows="5" :rowsPerPageOptions="[5, 10, 20]">
+      <DataTable 
+        :value="marinheiros" 
+        stripedRows 
+        responsiveLayout="scroll"
+        paginator 
+        :rows="5" 
+        :rowsPerPageOptions="[5, 10, 20]"
+      >
 
         <Column field="ID_MARINHEIRO" header="ID" />
         <Column field="NOME" header="Nome" />
@@ -27,10 +33,17 @@
         @click="abrirCriar" />
     </div>
 
-    <Modal :visivel="modalAberto" :titulo="isEdit ? 'Editar Marinheiro' : 'Criar Marinheiro'"
-      largura="35rem" @fechar="fecharModal">
-      <MarinheiroForm :marinheiroInicial="marinheiroAtual"
-        @guardar="guardar" @cancelar="fecharModal" />
+    <Modal 
+      :visivel="modalAberto" 
+      :titulo="isEdit ? 'Editar Marinheiro' : 'Criar Marinheiro'"
+      largura="35rem" 
+      @fechar="fecharModal"
+    >
+      <MarinheiroForm 
+        :marinheiroInicial="marinheiroAtual"
+        @guardar="guardar" 
+        @cancelar="fecharModal" 
+      />
     </Modal>
 
     <Mensagem ref="toast" />
@@ -77,13 +90,28 @@ export default {
 
     abrirCriar() {
       this.isEdit = false;
-      this.marinheiroAtual = { NOME: "", CLASSIFICACAO: 0, IDADE: 18 };
+
+      // FORM EM MINÚSCULAS
+      this.marinheiroAtual = { 
+        nome: "", 
+        classificacao: 0, 
+        idade: 18 
+      };
+
       this.modalAberto = true;
     },
 
     abrirEditar(marinheiro) {
       this.isEdit = true;
-      this.marinheiroAtual = { ...marinheiro };
+
+      // CONVERTER MAIÚSCULAS → minúsculas
+      this.marinheiroAtual = {
+        nome: marinheiro.NOME,
+        classificacao: marinheiro.CLASSIFICACAO,
+        idade: marinheiro.IDADE,
+        ID_MARINHEIRO: marinheiro.ID_MARINHEIRO
+      };
+
       this.modalAberto = true;
     },
 
@@ -100,8 +128,10 @@ export default {
           await marinheirosService.create(marinheiro);
           this.$refs.toast.sucesso("Marinheiro criado!");
         }
+
         this.modalAberto = false;
         await this.carregar();
+
       } catch {
         this.$refs.toast.erro("Erro ao guardar marinheiro.");
       }

@@ -5,8 +5,14 @@
     <Loading v-if="loading" />
 
     <div v-else class="card shadow-2 p-3 border-round">
-      <DataTable :value="reservas" stripedRows responsiveLayout="scroll"
-        paginator :rows="5" :rowsPerPageOptions="[5, 10, 20]">
+      <DataTable 
+        :value="reservas" 
+        stripedRows 
+        responsiveLayout="scroll"
+        paginator 
+        :rows="5" 
+        :rowsPerPageOptions="[5, 10, 20]"
+      >
 
         <Column field="ID_RESERVA" header="ID" />
         <Column field="ID_BARCO" header="Barco" />
@@ -27,11 +33,19 @@
         @click="abrirCriar" />
     </div>
 
-    <Modal :visivel="modalAberto" :titulo="isEdit ? 'Editar Reserva' : 'Criar Reserva'"
-      largura="35rem" @fechar="fecharModal">
-      <ReservaForm :reservaInicial="reservaAtual"
-        :barcos="barcos" :marinheiros="marinheiros"
-        @guardar="guardar" @cancelar="fecharModal" />
+    <Modal 
+      :visivel="modalAberto" 
+      :titulo="isEdit ? 'Editar Reserva' : 'Criar Reserva'"
+      largura="35rem" 
+      @fechar="fecharModal"
+    >
+      <ReservaForm 
+        :reservaInicial="reservaAtual"
+        :barcos="barcos" 
+        :marinheiros="marinheiros"
+        @guardar="guardar" 
+        @cancelar="fecharModal" 
+      />
     </Modal>
 
     <Mensagem ref="toast" />
@@ -84,13 +98,28 @@ export default {
 
     abrirCriar() {
       this.isEdit = false;
-      this.reservaAtual = { ID_BARCO: null, ID_MARINHEIRO: null, DATA: null };
+
+      // FORM EM MINÚSCULAS
+      this.reservaAtual = { 
+        id_barco: null, 
+        id_marinheiro: null, 
+        data: null 
+      };
+
       this.modalAberto = true;
     },
 
     abrirEditar(reserva) {
       this.isEdit = true;
-      this.reservaAtual = { ...reserva };
+
+      // CONVERTER MAIÚSCULAS → minúsculas
+      this.reservaAtual = {
+        id_barco: reserva.ID_BARCO,
+        id_marinheiro: reserva.ID_MARINHEIRO,
+        data: reserva.DATA,
+        ID_RESERVA: reserva.ID_RESERVA
+      };
+
       this.modalAberto = true;
     },
 
@@ -107,8 +136,10 @@ export default {
           await reservasService.create(reserva);
           this.$refs.toast.sucesso("Reserva criada!");
         }
+
         this.modalAberto = false;
         await this.carregarTudo();
+
       } catch {
         this.$refs.toast.erro("Erro ao guardar reserva.");
       }

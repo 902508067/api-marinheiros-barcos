@@ -70,9 +70,16 @@ export default {
   data() {
     return {
       form: {
-        id_barco: this.reservaInicial.id_barco || null,
-        id_marinheiro: this.reservaInicial.id_marinheiro || null,
-        data: this.reservaInicial.data ? new Date(this.reservaInicial.data) : null
+        // aceita minúsculas OU maiúsculas
+        id_barco: this.reservaInicial.id_barco || this.reservaInicial.ID_BARCO || null,
+        id_marinheiro: this.reservaInicial.id_marinheiro || this.reservaInicial.ID_MARINHEIRO || null,
+
+        // aceita data em minúsculas OU maiúsculas
+        data: this.reservaInicial.data
+          ? new Date(this.reservaInicial.data)
+          : this.reservaInicial.DATA
+          ? new Date(this.reservaInicial.DATA)
+          : null
       }
     };
   },

@@ -48,9 +48,9 @@ export default {
   data() {
     return {
       form: {
-        nome: this.marinheiroInicial.nome || "",
-        classificacao: this.marinheiroInicial.classificacao || null,
-        idade: this.marinheiroInicial.idade || null
+        nome: this.marinheiroInicial.nome || this.marinheiroInicial.NOME || "",
+        classificacao: this.marinheiroInicial.classificacao || this.marinheiroInicial.CLASSIFICACAO || null,
+        idade: this.marinheiroInicial.idade || this.marinheiroInicial.IDADE || null
       }
     };
   },

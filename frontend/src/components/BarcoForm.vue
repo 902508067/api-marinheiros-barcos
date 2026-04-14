@@ -3,12 +3,12 @@
 
     <div class="field">
       <label for="nome">Nome</label>
-      <InputText id="nome" v-model="form.NOME" />
+      <InputText id="nome" v-model="form.nome" />
     </div>
 
     <div class="field">
       <label for="cor">Cor</label>
-      <InputText id="cor" v-model="form.COR" />
+      <InputText id="cor" v-model="form.cor" />
     </div>
 
     <div class="flex justify-content-end gap-2 mt-3">
@@ -40,7 +40,10 @@ export default {
 
   data() {
     return {
-      form: { ...this.barcoInicial }
+      form: {
+        nome: this.barcoInicial.nome || "",
+        cor: this.barcoInicial.cor || ""
+      }
     };
   },
 

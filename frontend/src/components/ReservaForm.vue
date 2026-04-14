@@ -5,7 +5,7 @@
       <label for="barco">Barco</label>
       <Dropdown 
         id="barco"
-        v-model="form.ID_BARCO"
+        v-model="form.id_barco"
         :options="barcos"
         optionLabel="NOME"
         optionValue="ID_BARCO"
@@ -17,7 +17,7 @@
       <label for="marinheiro">Marinheiro</label>
       <Dropdown 
         id="marinheiro"
-        v-model="form.ID_MARINHEIRO"
+        v-model="form.id_marinheiro"
         :options="marinheiros"
         optionLabel="NOME"
         optionValue="ID_MARINHEIRO"
@@ -27,7 +27,7 @@
 
     <div class="field">
       <label for="data">Data</label>
-      <Calendar id="data" v-model="form.DATA" dateFormat="dd/mm/yy" />
+      <Calendar id="data" v-model="form.data" dateFormat="dd/mm/yy" />
     </div>
 
     <div class="flex justify-content-end gap-2 mt-3">
@@ -69,13 +69,33 @@ export default {
 
   data() {
     return {
-      form: { ...this.reservaInicial }
+      form: {
+        id_barco: this.reservaInicial.id_barco || null,
+        id_marinheiro: this.reservaInicial.id_marinheiro || null,
+        data: this.reservaInicial.data ? new Date(this.reservaInicial.data) : null
+      }
     };
   },
 
   methods: {
     guardar() {
-      this.$emit("guardar", this.form);
+      let payload = {
+        id_barco: this.form.id_barco,
+        id_marinheiro: this.form.id_marinheiro,
+        data: this.formatarData(this.form.data)
+      };
+
+      this.$emit("guardar", payload);
+    },
+
+    formatarData(dateObj) {
+      if (!dateObj) return null;
+
+      const ano = dateObj.getFullYear();
+      const mes = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const dia = String(dateObj.getDate()).padStart(2, "0");
+
+      return `${ano}-${mes}-${dia}`;
     }
   }
 };

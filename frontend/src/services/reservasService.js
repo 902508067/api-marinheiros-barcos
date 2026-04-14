@@ -25,7 +25,13 @@ export default {
 
   async create(data) {
     try {
-      const response = await axios.post(API_URL, data);
+      const payload = {
+        id_barco: data.id_barco,
+        id_marinheiro: data.id_marinheiro,
+        data: data.data // já deve vir em YYYY-MM-DD do formulário
+      };
+
+      const response = await axios.post(API_URL, payload);
       return response.data;
     } catch (error) {
       console.error("Erro ao criar reserva:", error);
@@ -35,7 +41,13 @@ export default {
 
   async update(id, data) {
     try {
-      const response = await axios.put(`${API_URL}/${id}`, data);
+      const payload = {
+        id_barco: data.id_barco,
+        id_marinheiro: data.id_marinheiro,
+        data: data.data
+      };
+
+      const response = await axios.put(`${API_URL}/${id}`, payload);
       return response.data;
     } catch (error) {
       console.error("Erro ao atualizar reserva:", error);

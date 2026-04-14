@@ -7,9 +7,7 @@ const dbConfig = {
   connectionString: process.env.DB_CONNECTION
 };
 
-// -----------------------------
 // LISTAR MARINHEIROS
-// -----------------------------
 async function listarMarinheiros(req, res) {
   try {
     const conn = await oracledb.getConnection(dbConfig);
@@ -25,9 +23,7 @@ async function listarMarinheiros(req, res) {
   }
 }
 
-// -----------------------------
 // OBTER MARINHEIRO
-// -----------------------------
 async function obterMarinheiro(req, res) {
   const { id } = req.params;
 
@@ -55,9 +51,7 @@ async function obterMarinheiro(req, res) {
   }
 }
 
-// -----------------------------
 // CRIAR MARINHEIRO
-// -----------------------------
 async function criarMarinheiro(req, res) {
   const { nome, classificacao, idade } = req.body;
 
@@ -71,11 +65,12 @@ async function criarMarinheiro(req, res) {
     await conn.execute(
       `INSERT INTO Marinheiros (id_marinheiro, nome, classificacao, idade)
        VALUES (seq_marinheiros.NEXTVAL, :nome, :classificacao, :idade)`,
-      { nome, classificacao, idade },
-      { autoCommit: true }
+      { nome, classificacao, idade }
     );
 
+    await conn.commit();
     await conn.close();
+
     res.json({ message: "Marinheiro criado com sucesso!" });
 
   } catch (err) {
@@ -83,9 +78,7 @@ async function criarMarinheiro(req, res) {
   }
 }
 
-// -----------------------------
 // ATUALIZAR MARINHEIRO
-// -----------------------------
 async function atualizarMarinheiro(req, res) {
   const { id } = req.params;
   const { nome, classificacao, idade } = req.body;
@@ -124,11 +117,12 @@ async function atualizarMarinheiro(req, res) {
       `UPDATE Marinheiros
        SET nome = :nome, classificacao = :classificacao, idade = :idade
        WHERE id_marinheiro = :id`,
-      { nome, classificacao, idade, id },
-      { autoCommit: true }
+      { nome, classificacao, idade, id }
     );
 
+    await conn.commit();
     await conn.close();
+
     res.json({ message: "Marinheiro atualizado com sucesso!" });
 
   } catch (err) {
@@ -136,9 +130,7 @@ async function atualizarMarinheiro(req, res) {
   }
 }
 
-// -----------------------------
 // ATUALIZAR CLASSIFICAÇÃO
-// -----------------------------
 async function atualizarClassificacao(req, res) {
   const { id } = req.params;
   const { classificacao } = req.body;
@@ -169,11 +161,12 @@ async function atualizarClassificacao(req, res) {
       `UPDATE Marinheiros
        SET classificacao = :classificacao
        WHERE id_marinheiro = :id`,
-      { classificacao, id },
-      { autoCommit: true }
+      { classificacao, id }
     );
 
+    await conn.commit();
     await conn.close();
+
     res.json({ message: "Classificação atualizada com sucesso!" });
 
   } catch (err) {
@@ -181,9 +174,7 @@ async function atualizarClassificacao(req, res) {
   }
 }
 
-// -----------------------------
 // ELIMINAR MARINHEIRO
-// -----------------------------
 async function eliminarMarinheiro(req, res) {
   const { id } = req.params;
 
@@ -211,10 +202,10 @@ async function eliminarMarinheiro(req, res) {
 
     const result = await conn.execute(
       `DELETE FROM Marinheiros WHERE id_marinheiro = :id`,
-      { id },
-      { autoCommit: true }
+      { id }
     );
 
+    await conn.commit();
     await conn.close();
 
     if (result.rowsAffected === 0) {
@@ -228,9 +219,7 @@ async function eliminarMarinheiro(req, res) {
   }
 }
 
-// -----------------------------
 // LISTAR POR CLASSIFICAÇÃO
-// -----------------------------
 async function listarPorClassificacao(req, res) {
   const { classificacao } = req.params;
 

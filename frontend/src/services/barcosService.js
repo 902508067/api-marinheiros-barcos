@@ -25,7 +25,12 @@ export default {
 
   async create(data) {
     try {
-      const response = await axios.post(API_URL, data);
+      const payload = {
+        nome: data.nome,
+        cor: data.cor
+      };
+
+      const response = await axios.post(API_URL, payload);
       return response.data;
     } catch (error) {
       console.error("Erro ao criar barco:", error);
@@ -35,7 +40,12 @@ export default {
 
   async update(id, data) {
     try {
-      const response = await axios.put(`${API_URL}/${id}`, data);
+      const payload = {
+        nome: data.nome,
+        cor: data.cor
+      };
+
+      const response = await axios.put(`${API_URL}/${id}`, payload);
       return response.data;
     } catch (error) {
       console.error("Erro ao atualizar barco:", error);

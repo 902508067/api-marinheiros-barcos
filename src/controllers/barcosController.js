@@ -57,18 +57,18 @@ async function criarBarco(req, res) {
     await conn.execute(
       `INSERT INTO Barcos (id_barco, nome, cor)
        VALUES (seq_barcos.NEXTVAL, :nome, :cor)`,
-      { nome, cor },
-      { autoCommit: true }
+      { nome, cor }
     );
 
+    await conn.commit();  
     await conn.close();
+
     res.json({ message: "Barco criado com sucesso!" });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
-
 
 // ATUALIZAR BARCO
 async function atualizarBarco(req, res) {
@@ -77,20 +77,23 @@ async function atualizarBarco(req, res) {
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
+
     await conn.execute(
       `UPDATE Barcos
        SET nome = :nome, cor = :cor
        WHERE id_barco = :id`,
-      { nome, cor, id },
-      { autoCommit: true }
+      { nome, cor, id }
     );
+
+    await conn.commit();  
     await conn.close();
+
     res.json({ message: "Barco atualizado com sucesso!" });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
-
 
 // ELIMINAR BARCO
 async function eliminarBarco(req, res) {
@@ -116,11 +119,12 @@ async function eliminarBarco(req, res) {
 
     await conn.execute(
       `DELETE FROM Barcos WHERE id_barco = :id`,
-      { id },
-      { autoCommit: true }
+      { id }
     );
 
+    await conn.commit();  
     await conn.close();
+
     res.json({ message: "Barco eliminado com sucesso!" });
 
   } catch (err) {
@@ -155,7 +159,6 @@ async function listarBarcosDisponiveis(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-
 
 module.exports = {
   listarBarcos,

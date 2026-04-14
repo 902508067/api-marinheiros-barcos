@@ -3,17 +3,17 @@
 
     <div class="field">
       <label for="nome">Nome</label>
-      <InputText id="nome" v-model="form.NOME" />
+      <InputText id="nome" v-model="form.nome" />
     </div>
 
     <div class="field">
       <label for="classificacao">Classificação</label>
-      <InputNumber id="classificacao" v-model="form.CLASSIFICACAO" :min="0" />
+      <InputNumber id="classificacao" v-model="form.classificacao" :min="0" />
     </div>
 
     <div class="field">
       <label for="idade">Idade</label>
-      <InputNumber id="idade" v-model="form.IDADE" :min="18" />
+      <InputNumber id="idade" v-model="form.idade" :min="18" />
     </div>
 
     <div class="flex justify-content-end gap-2 mt-3">
@@ -47,7 +47,11 @@ export default {
 
   data() {
     return {
-      form: { ...this.marinheiroInicial }
+      form: {
+        nome: this.marinheiroInicial.nome || "",
+        classificacao: this.marinheiroInicial.classificacao || null,
+        idade: this.marinheiroInicial.idade || null
+      }
     };
   },
 

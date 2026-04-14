@@ -57,18 +57,18 @@ async function criarReserva(req, res) {
     await conn.execute(
       `INSERT INTO Reservas (id_reserva, id_marinheiro, id_barco, data)
        VALUES (seq_reservas.NEXTVAL, :id_marinheiro, :id_barco, TO_DATE(:data, 'YYYY-MM-DD'))`,
-      { id_marinheiro, id_barco, data },
-      { autoCommit: true }
+      { id_marinheiro, id_barco, data }
     );
 
+    await conn.commit();
     await conn.close();
+
     res.json({ message: "Reserva criada com sucesso!" });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
-
 
 // LISTAR RESERVAS POR MARINHEIRO
 async function listarReservasPorMarinheiro(req, res) {
@@ -112,17 +112,26 @@ async function eliminarReserva(req, res) {
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
-    await conn.execute(
+
+    const result = await conn.execute(
       `DELETE FROM Reservas WHERE id_reserva = :id`,
-      { id },
-      { autoCommit: true }
+      { id }
     );
+
+    await conn.commit();
     await conn.close();
+
+    if (result.rowsAffected === 0) {
+      return res.status(404).json({ error: "Reserva não encontrada." });
+    }
+
     res.json({ message: "Reserva eliminada com sucesso!" });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
+
 // ATUALIZAR RESERVA
 async function atualizarReserva(req, res) {
   const { id } = req.params;
@@ -131,7 +140,6 @@ async function atualizarReserva(req, res) {
   try {
     const conn = await oracledb.getConnection(dbConfig);
 
-    // 1) Verificar se a reserva existe
     const checkReserva = await conn.execute(
       `SELECT COUNT(*) AS total FROM Reservas WHERE id_reserva = :id`,
       { id },
@@ -143,7 +151,6 @@ async function atualizarReserva(req, res) {
       return res.status(404).json({ error: "Reserva não encontrada." });
     }
 
-    // 2) Verificar se o marinheiro existe
     const checkMarinheiro = await conn.execute(
       `SELECT COUNT(*) AS total FROM Marinheiros WHERE id_marinheiro = :id_marinheiro`,
       { id_marinheiro },
@@ -155,7 +162,6 @@ async function atualizarReserva(req, res) {
       return res.status(400).json({ error: "Marinheiro não existe." });
     }
 
-    // 3) Verificar se o barco existe
     const checkBarco = await conn.execute(
       `SELECT COUNT(*) AS total FROM Barcos WHERE id_barco = :id_barco`,
       { id_barco },
@@ -167,7 +173,6 @@ async function atualizarReserva(req, res) {
       return res.status(400).json({ error: "Barco não existe." });
     }
 
-    // 4) Verificar se o barco está livre na nova data (exceto esta reserva)
     const checkDisponivel = await conn.execute(
       `SELECT COUNT(*) AS total
        FROM Reservas
@@ -183,18 +188,18 @@ async function atualizarReserva(req, res) {
       return res.status(400).json({ error: "O barco já está reservado nessa data." });
     }
 
-    // 5) Atualizar a reserva
     await conn.execute(
       `UPDATE Reservas
        SET id_marinheiro = :id_marinheiro,
            id_barco = :id_barco,
            data = TO_DATE(:data, 'YYYY-MM-DD')
        WHERE id_reserva = :id`,
-      { id_marinheiro, id_barco, data, id },
-      { autoCommit: true }
+      { id_marinheiro, id_barco, data, id }
     );
 
+    await conn.commit();
     await conn.close();
+
     res.json({ message: "Reserva atualizada com sucesso!" });
 
   } catch (err) {
@@ -211,4 +216,3 @@ module.exports = {
   listarReservasPorBarco,
   atualizarReserva
 };
-

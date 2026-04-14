@@ -98,7 +98,7 @@ export default {
     };
   },
 
-  async created() {
+  async mounted() {
     await this.carregarBarcos();
   },
 
@@ -111,7 +111,10 @@ export default {
 
     abrirCriar() {
       this.isEdit = false;
-      this.barcoAtual = { nome: "", capacidade: 1, precoPorDia: 0, descricao: "" };
+      this.barcoAtual = { 
+        NOME: "", 
+        COR: ""
+      };
       this.modalAberto = true;
     },
 

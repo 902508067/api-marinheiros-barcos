@@ -47,7 +47,7 @@ async function obterReserva(req, res) {
   }
 }
 
-// CRIAR RESERVA (CORRIGIDO COM TO_DATE)
+// CRIAR RESERVA
 async function criarReserva(req, res) {
   const { id_marinheiro, id_barco, data } = req.body;
 
@@ -55,8 +55,8 @@ async function criarReserva(req, res) {
     const conn = await oracledb.getConnection(dbConfig);
 
     await conn.execute(
-      `INSERT INTO Reservas (id_marinheiro, id_barco, data)
-       VALUES (:id_marinheiro, :id_barco, TO_DATE(:data, 'YYYY-MM-DD'))`,
+      `INSERT INTO Reservas (id_reserva, id_marinheiro, id_barco, data)
+       VALUES (seq_reservas.NEXTVAL, :id_marinheiro, :id_barco, TO_DATE(:data, 'YYYY-MM-DD'))`,
       { id_marinheiro, id_barco, data },
       { autoCommit: true }
     );

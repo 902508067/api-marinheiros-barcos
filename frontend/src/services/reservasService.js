@@ -1,33 +1,55 @@
-import api from './api';
+import axios from "axios";
+
+const API_URL = "http://localhost:3000/reservas";
 
 export default {
   async getAll() {
-    const res = await api.get('/reservas');
-    return res.data;
+    try {
+      const response = await axios.get(API_URL);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error("Erro ao obter reservas:", error);
+      return [];
+    }
   },
 
-  async getReservas() {
-    const res = await api.get('/reservas');
-    return res.data;
+  async getById(id) {
+    try {
+      const response = await axios.get(`${API_URL}/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao obter reserva:", error);
+      return null;
+    }
   },
 
-  async getReserva(id) {
-    const res = await api.get(`/reservas/${id}`);
-    return res.data;
+  async create(data) {
+    try {
+      const response = await axios.post(API_URL, data);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao criar reserva:", error);
+      return null;
+    }
   },
 
-  async createReserva(data) {
-    const res = await api.post('/reservas', data);
-    return res.data;
+  async update(id, data) {
+    try {
+      const response = await axios.put(`${API_URL}/${id}`, data);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao atualizar reserva:", error);
+      return null;
+    }
   },
 
-  async updateReserva(id, data) {
-    const res = await api.put(`/reservas/${id}`, data);
-    return res.data;
-  },
-
-  async deleteReserva(id) {
-    const res = await api.delete(`/reservas/${id}`);
-    return res.data;
+  async delete(id) {
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      return true;
+    } catch (error) {
+      console.error("Erro ao eliminar reserva:", error);
+      return false;
+    }
   }
 };

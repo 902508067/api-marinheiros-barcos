@@ -11,14 +11,14 @@
       </thead>
 
       <tbody>
-        <tr v-for="item in dados" :key="item.id">
+        <tr v-for="item in dados" :key="item[primaryKey]">
           <td v-for="coluna in colunas" :key="coluna">
-            {{ item[coluna.toLowerCase()] }}
+            {{ item[coluna] }}
           </td>
 
           <td class="acoes">
             <button class="edit-btn" @click="$emit('editar', item)">Editar</button>
-            <button class="delete-btn" @click="$emit('eliminar', item.id)">Eliminar</button>
+            <button class="delete-btn" @click="$emit('eliminar', item[primaryKey])">Eliminar</button>
           </td>
         </tr>
       </tbody>
@@ -29,10 +29,15 @@
 <script>
 export default {
   name: "Tabela",
+
   props: {
     colunas: Array,
     dados: Array,
-  },
+    primaryKey: {
+      type: String,
+      default: "ID" // podes mudar para ID_BARCO, ID_MARINHEIRO, etc.
+    }
+  }
 };
 </script>
 
@@ -40,12 +45,11 @@ export default {
 .table-wrapper {
   background: #fff;
   padding: 20px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
   overflow-x: auto;
 }
 
-/* Tabela moderna estilo Booking */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -53,7 +57,7 @@ table {
 }
 
 thead {
-  background: var(--primary);
+  background: #007ad9;
   color: #fff;
 }
 
@@ -66,14 +70,12 @@ th {
 td {
   padding: 12px 14px;
   border-bottom: 1px solid #e5e7eb;
-  color: var(--text);
 }
 
 tr:hover td {
   background: #f3f4f6;
 }
 
-/* Coluna das ações */
 .acoes-col {
   width: 140px;
 }
@@ -83,9 +85,8 @@ tr:hover td {
   gap: 8px;
 }
 
-/* Botões */
 .edit-btn {
-  background: var(--primary-light);
+  background: #4da3ff;
   color: #fff;
   border: none;
   padding: 6px 10px;
@@ -95,7 +96,7 @@ tr:hover td {
 }
 
 .edit-btn:hover {
-  background: var(--primary);
+  background: #007ad9;
 }
 
 .delete-btn {

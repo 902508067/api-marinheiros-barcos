@@ -53,14 +53,17 @@ async function criarBarco(req, res) {
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
+
     await conn.execute(
-      `INSERT INTO Barcos (nome, cor)
-       VALUES (:nome, :cor)`,
+      `INSERT INTO Barcos (id_barco, nome, cor)
+       VALUES (seq_barcos.NEXTVAL, :nome, :cor)`,
       { nome, cor },
       { autoCommit: true }
     );
+
     await conn.close();
     res.json({ message: "Barco criado com sucesso!" });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

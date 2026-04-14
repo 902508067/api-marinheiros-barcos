@@ -65,24 +65,19 @@ async function criarMarinheiro(req, res) {
     return res.status(400).json({ error: "Nome, classificação e idade são obrigatórios." });
   }
 
-  if (isNaN(idade)) {
-    return res.status(400).json({ error: "Idade deve ser numérica." });
-  }
-
-  if (isNaN(classificacao) || classificacao < 1 || classificacao > 5) {
-    return res.status(400).json({ error: "Classificação deve ser um número entre 1 e 5." });
-  }
-
   try {
     const conn = await oracledb.getConnection(dbConfig);
+
     await conn.execute(
-      `INSERT INTO Marinheiros (nome, classificacao, idade)
-       VALUES (:nome, :classificacao, :idade)`,
+      `INSERT INTO Marinheiros (id_marinheiro, nome, classificacao, idade)
+       VALUES (seq_marinheiros.NEXTVAL, :nome, :classificacao, :idade)`,
       { nome, classificacao, idade },
       { autoCommit: true }
     );
+
     await conn.close();
     res.json({ message: "Marinheiro criado com sucesso!" });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

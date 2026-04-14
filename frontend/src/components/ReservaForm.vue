@@ -1,126 +1,88 @@
 <template>
-  <Card class="shadow-2 p-4 border-round">
-    <h2 class="text-2xl font-bold mb-4">
-      {{ isEdit ? "Editar Reserva" : "Criar Reserva" }}
-    </h2>
+  <div class="p-fluid">
 
-    <div class="grid p-fluid">
-
-      <!-- Barco -->
-      <div class="col-12 md:col-6">
-        <label class="font-bold mb-2 block">Barco</label>
-        <Dropdown 
-          v-model="reserva.idBarco"
-          :options="barcos"
-          optionLabel="nome"
-          optionValue="id"
-          placeholder="Selecione o barco"
-          class="w-full"
-        />
-      </div>
-
-      <!-- Marinheiro -->
-      <div class="col-12 md:col-6">
-        <label class="font-bold mb-2 block">Marinheiro</label>
-        <Dropdown 
-          v-model="reserva.idMarinheiro"
-          :options="marinheiros"
-          optionLabel="nome"
-          optionValue="id"
-          placeholder="Selecione o marinheiro"
-          class="w-full"
-        />
-      </div>
-
-      <!-- Data -->
-      <div class="col-12 md:col-6">
-        <label class="font-bold mb-2 block">Data da Reserva</label>
-        <Calendar 
-          v-model="reserva.data"
-          dateFormat="dd/mm/yy"
-          showIcon
-          class="w-full"
-        />
-      </div>
-
-      <!-- Observações -->
-      <div class="col-12">
-        <label class="font-bold mb-2 block">Observações</label>
-        <InputTextarea 
-          v-model="reserva.observacoes" 
-          rows="4" 
-          autoResize 
-          placeholder="Notas adicionais"
-        />
-      </div>
-
-    </div>
-
-    <!-- Botões -->
-    <div class="mt-4 flex justify-content-end gap-3">
-      <Button 
-        label="Cancelar" 
-        icon="pi pi-times" 
-        class="p-button-secondary"
-        @click="$emit('cancelar')"
-      />
-
-      <Button 
-        :label="isEdit ? 'Guardar Alterações' : 'Criar Reserva'"
-        icon="pi pi-check" 
-        class="p-button-success"
-        @click="guardar"
+    <div class="field">
+      <label for="barco">Barco</label>
+      <Dropdown 
+        id="barco"
+        v-model="form.ID_BARCO"
+        :options="barcos"
+        optionLabel="NOME"
+        optionValue="ID_BARCO"
+        placeholder="Selecione um barco"
       />
     </div>
-  </Card>
+
+    <div class="field">
+      <label for="marinheiro">Marinheiro</label>
+      <Dropdown 
+        id="marinheiro"
+        v-model="form.ID_MARINHEIRO"
+        :options="marinheiros"
+        optionLabel="NOME"
+        optionValue="ID_MARINHEIRO"
+        placeholder="Selecione um marinheiro"
+      />
+    </div>
+
+    <div class="field">
+      <label for="data">Data</label>
+      <Calendar id="data" v-model="form.DATA" dateFormat="dd/mm/yy" />
+    </div>
+
+    <div class="flex justify-content-end gap-2 mt-3">
+      <Button label="Cancelar" class="p-button-secondary" @click="$emit('cancelar')" />
+      <Button label="Guardar" class="p-button-success" @click="guardar" />
+    </div>
+
+  </div>
 </template>
 
 <script>
-import Card from 'primevue/card';
 import Dropdown from 'primevue/dropdown';
 import Calendar from 'primevue/calendar';
-import InputTextarea from 'primevue/inputtextarea';
 import Button from 'primevue/button';
 
 export default {
   name: "ReservaForm",
 
-  props: {
-    reservaInicial: Object,
-    barcos: Array,
-    marinheiros: Array
-  },
-
   components: {
-    Card,
     Dropdown,
     Calendar,
-    InputTextarea,
     Button
+  },
+
+  props: {
+    reservaInicial: {
+      type: Object,
+      required: true
+    },
+    barcos: {
+      type: Array,
+      required: true
+    },
+    marinheiros: {
+      type: Array,
+      required: true
+    }
   },
 
   data() {
     return {
-      reserva: { ...this.reservaInicial }
+      form: { ...this.reservaInicial }
     };
-  },
-
-  computed: {
-    isEdit() {
-      return !!this.reserva.id;
-    },
   },
 
   methods: {
     guardar() {
-      this.$emit("guardar", this.reserva);
-    },
-  },
+      this.$emit("guardar", this.form);
+    }
+  }
 };
 </script>
 
 <style scoped>
-.shadow-2 {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+.field {
+  margin-bottom: 1rem;
 }
 </style>

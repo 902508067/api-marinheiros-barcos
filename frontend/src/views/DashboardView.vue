@@ -10,7 +10,7 @@
             <i class="pi pi-ship text-4xl text-blue-500 mr-3"></i>
             <div>
               <h3 class="m-0">Barcos</h3>
-              <p class="text-2xl font-bold m-0">{{ totalBarcos }}</p>
+              <p class="text-2xl font-bold m-0">12</p>
             </div>
           </div>
         </Card>
@@ -23,7 +23,7 @@
             <i class="pi pi-users text-4xl text-green-500 mr-3"></i>
             <div>
               <h3 class="m-0">Marinheiros</h3>
-              <p class="text-2xl font-bold m-0">{{ totalMarinheiros }}</p>
+              <p class="text-2xl font-bold m-0">8</p>
             </div>
           </div>
         </Card>
@@ -35,46 +35,32 @@
           <div class="flex align-items-center">
             <i class="pi pi-calendar text-4xl text-purple-500 mr-3"></i>
             <div>
-              <h3 class="m-0">Reservas Ativas</h3>
-              <p class="text-2xl font-bold m-0">{{ totalReservas }}</p>
+              <h3 class="m-0">Reservas</h3>
+              <p class="text-2xl font-bold m-0">5</p>
             </div>
           </div>
         </Card>
       </div>
+    </div>
+
+    <!-- Secção extra opcional -->
+    <div class="mt-5">
+      <Card class="shadow-2 p-4 border-round">
+        <h2 class="text-2xl font-bold mb-3">Bem-vindo à aplicação Náutica</h2>
+        <p class="text-lg">
+          Aqui podes gerir barcos, marinheiros e reservas de forma simples e rápida.
+        </p>
+      </Card>
     </div>
   </div>
 </template>
 
 <script>
 import Card from 'primevue/card';
-import barcosService from "../services/barcosService";
-import marinheirosService from "../services/marinheirosService";
-import reservasService from "../services/reservasService";
 
 export default {
   name: "DashboardView",
-
-  components: {
-    Card
-  },
-
-  data() {
-    return {
-      totalBarcos: 0,
-      totalMarinheiros: 0,
-      totalReservas: 0,
-    };
-  },
-
-  async created() {
-    const barcos = await barcosService.getAll();
-    const marinheiros = await marinheirosService.getAll();
-    const reservas = await reservasService.getAll();
-
-    this.totalBarcos = barcos.length;
-    this.totalMarinheiros = marinheiros.length;
-    this.totalReservas = reservas.length;
-  },
+  components: { Card }
 };
 </script>
 
@@ -83,4 +69,3 @@ export default {
   box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
 </style>
-

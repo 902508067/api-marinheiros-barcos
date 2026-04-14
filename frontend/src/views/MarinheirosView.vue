@@ -2,7 +2,6 @@
   <div class="p-4">
     <h1 class="text-3xl font-bold mb-4">Marinheiros</h1>
 
-    <!-- LOADING -->
     <Loading v-if="loading" />
 
     <div v-else class="card shadow-2 p-3 border-round">
@@ -16,7 +15,7 @@
       >
         <Column field="ID_MARINHEIRO" header="ID" style="width: 100px"></Column>
         <Column field="NOME" header="Nome"></Column>
-        <Column field="FUNCAO" header="Função"></Column>
+        <Column field="CLASSIFICACAO" header="Classificação"></Column>
         <Column field="IDADE" header="Idade"></Column>
 
         <Column header="Ações" style="width: 150px">
@@ -29,7 +28,7 @@
             <Button 
               icon="pi pi-trash" 
               class="p-button-rounded p-button-danger"
-              @click="eliminarMarinheiro(slotProps.data.ID_MARINHEIRO)"
+              @click="eliminar(slotProps.data.ID_MARINHEIRO)"
             />
           </template>
         </Column>
@@ -43,22 +42,20 @@
       />
     </div>
 
-    <!-- MODAL -->
     <Modal 
       :visivel="modalAberto"
       :titulo="isEdit ? 'Editar Marinheiro' : 'Criar Marinheiro'"
       largura="35rem"
       @fechar="fecharModal"
-      @guardar="guardarMarinheiro"
+      @guardar="guardar"
     >
       <MarinheiroForm 
         :marinheiroInicial="marinheiroAtual"
-        @guardar="guardarMarinheiro"
+        @guardar="guardar"
         @cancelar="fecharModal"
       />
     </Modal>
 
-    <!-- TOAST -->
     <Mensagem ref="toast" />
   </div>
 </template>
@@ -99,12 +96,12 @@ export default {
     };
   },
 
-  async created() {
-    await this.carregarMarinheiros();
+  async mounted() {
+    await this.carregar();
   },
 
   methods: {
-    async carregarMarinheiros() {
+    async carregar() {
       this.loading = true;
       this.marinheiros = await marinheirosService.getAll();
       this.loading = false;
@@ -112,7 +109,11 @@ export default {
 
     abrirCriar() {
       this.isEdit = false;
-      this.marinheiroAtual = { nome: "", idade: 18, funcao: "", descricao: "" };
+      this.marinheiroAtual = { 
+        NOME: "", 
+        CLASSIFICACAO: 0,
+        IDADE: 18
+      };
       this.modalAberto = true;
     },
 
@@ -126,29 +127,29 @@ export default {
       this.modalAberto = false;
     },
 
-    async guardarMarinheiro(marinheiro) {
+    async guardar(marinheiro) {
       try {
         if (this.isEdit) {
           await marinheirosService.updateMarinheiro(marinheiro.ID_MARINHEIRO, marinheiro);
-          this.$refs.toast.sucesso("Marinheiro atualizado com sucesso!");
+          this.$refs.toast.sucesso("Marinheiro atualizado!");
         } else {
           await marinheirosService.createMarinheiro(marinheiro);
-          this.$refs.toast.sucesso("Marinheiro criado com sucesso!");
+          this.$refs.toast.sucesso("Marinheiro criado!");
         }
 
         this.modalAberto = false;
-        await this.carregarMarinheiros();
+        await this.carregar();
 
-      } catch (e) {
-        this.$refs.toast.erro("Ocorreu um erro ao guardar o marinheiro.");
+      } catch {
+        this.$refs.toast.erro("Erro ao guardar marinheiro.");
       }
     },
 
-    async eliminarMarinheiro(id) {
+    async eliminar(id) {
       try {
         await marinheirosService.deleteMarinheiro(id);
         this.marinheiros = this.marinheiros.filter(m => m.ID_MARINHEIRO !== id);
-        this.$refs.toast.sucesso("Marinheiro eliminado com sucesso!");
+        this.$refs.toast.sucesso("Marinheiro eliminado!");
       } catch {
         this.$refs.toast.erro("Erro ao eliminar marinheiro.");
       }

@@ -2,7 +2,6 @@
   <div class="p-4">
     <h1 class="text-3xl font-bold mb-4">Reservas</h1>
 
-    <!-- LOADING -->
     <Loading v-if="loading" />
 
     <div v-else class="card shadow-2 p-3 border-round">
@@ -15,8 +14,8 @@
         :rowsPerPageOptions="[5, 10, 20]"
       >
         <Column field="ID_RESERVA" header="ID" style="width: 100px"></Column>
-        <Column field="NOME_BARCO" header="Barco"></Column>
-        <Column field="NOME_MARINHEIRO" header="Marinheiro"></Column>
+        <Column field="ID_BARCO" header="Barco"></Column>
+        <Column field="ID_MARINHEIRO" header="Marinheiro"></Column>
         <Column field="DATA" header="Data"></Column>
 
         <Column header="Ações" style="width: 150px">
@@ -29,7 +28,7 @@
             <Button 
               icon="pi pi-trash" 
               class="p-button-rounded p-button-danger"
-              @click="eliminarReserva(slotProps.data.ID_RESERVA)"
+              @click="eliminar(slotProps.data.ID_RESERVA)"
             />
           </template>
         </Column>
@@ -43,24 +42,22 @@
       />
     </div>
 
-    <!-- MODAL -->
     <Modal 
       :visivel="modalAberto"
       :titulo="isEdit ? 'Editar Reserva' : 'Criar Reserva'"
       largura="35rem"
       @fechar="fecharModal"
-      @guardar="guardarReserva"
+      @guardar="guardar"
     >
       <ReservaForm 
         :reservaInicial="reservaAtual"
         :barcos="barcos"
         :marinheiros="marinheiros"
-        @guardar="guardarReserva"
+        @guardar="guardar"
         @cancelar="fecharModal"
       />
     </Modal>
 
-    <!-- TOAST -->
     <Mensagem ref="toast" />
   </div>
 </template>
@@ -105,7 +102,7 @@ export default {
     };
   },
 
-  async created() {
+  async mounted() {
     await this.carregarTudo();
   },
 
@@ -122,7 +119,11 @@ export default {
 
     abrirCriar() {
       this.isEdit = false;
-      this.reservaAtual = { idBarco: null, idMarinheiro: null, data: null, observacoes: "" };
+      this.reservaAtual = { 
+        ID_BARCO: null,
+        ID_MARINHEIRO: null,
+        DATA: null
+      };
       this.modalAberto = true;
     },
 
@@ -136,29 +137,29 @@ export default {
       this.modalAberto = false;
     },
 
-    async guardarReserva(reserva) {
+    async guardar(reserva) {
       try {
         if (this.isEdit) {
           await reservasService.updateReserva(reserva.ID_RESERVA, reserva);
-          this.$refs.toast.sucesso("Reserva atualizada com sucesso!");
+          this.$refs.toast.sucesso("Reserva atualizada!");
         } else {
           await reservasService.createReserva(reserva);
-          this.$refs.toast.sucesso("Reserva criada com sucesso!");
+          this.$refs.toast.sucesso("Reserva criada!");
         }
 
         this.modalAberto = false;
         await this.carregarTudo();
 
-      } catch (e) {
-        this.$refs.toast.erro("Ocorreu um erro ao guardar a reserva.");
+      } catch {
+        this.$refs.toast.erro("Erro ao guardar reserva.");
       }
     },
 
-    async eliminarReserva(id) {
+    async eliminar(id) {
       try {
         await reservasService.deleteReserva(id);
         this.reservas = this.reservas.filter(r => r.ID_RESERVA !== id);
-        this.$refs.toast.sucesso("Reserva eliminada com sucesso!");
+        this.$refs.toast.sucesso("Reserva eliminada!");
       } catch {
         this.$refs.toast.erro("Erro ao eliminar reserva.");
       }

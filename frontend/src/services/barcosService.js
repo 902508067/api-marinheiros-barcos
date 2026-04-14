@@ -1,18 +1,23 @@
-import axios from "axios";
-
-const API = "http://localhost:3000/barcos";
+import api from './api';
 
 export default {
-  listar() {
-    return axios.get(API);
+  getBarcos() {
+    return api.get('/barcos');
   },
-  criar(dados) {
-    return axios.post(API, dados);
+
+  getBarco(id) {
+    return api.get(`/barcos/${id}`);
   },
-  atualizar(id, dados) {
-    return axios.put(`${API}/${id}`, dados);
+
+  createBarco(data) {
+    return api.post('/barcos', data);
   },
-  apagar(id) {
-    return axios.delete(`${API}/${id}`);
+
+  updateBarco(id, data) {
+    return api.put(`/barcos/${id}`, data);
+  },
+
+  deleteBarco(id) {
+    return api.delete(`/barcos/${id}`);
   }
 };

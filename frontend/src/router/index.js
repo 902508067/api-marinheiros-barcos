@@ -1,29 +1,34 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
+
+import DashboardView from '../views/DashboardView.vue';
+import MarinheirosView from '../views/MarinheirosView.vue';
+import BarcosView from '../views/BarcosView.vue';
+import ReservasView from '../views/ReservasView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: () => import('../views/HomeView.vue')
+      name: 'dashboard',
+      component: DashboardView
     },
     {
       path: '/marinheiros',
       name: 'marinheiros',
-      component: () => import('../views/MarinheirosView.vue')
+      component: MarinheirosView
     },
     {
       path: '/barcos',
       name: 'barcos',
-      component: () => import('../views/BarcosView.vue')
+      component: BarcosView
     },
     {
       path: '/reservas',
       name: 'reservas',
-      component: () => import('../views/ReservasView.vue')
+      component: ReservasView
     }
   ]
-})
+});
 
-export default router
+export default router;

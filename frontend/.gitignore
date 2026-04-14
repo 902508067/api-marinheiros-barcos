@@ -1,3 +1,11 @@
+# Sistema
 .DS_Store
-*/.DS_Store
 
+# Dependências
+node_modules/
+
+# Build
+dist/
+
+# Ambiente
+.env

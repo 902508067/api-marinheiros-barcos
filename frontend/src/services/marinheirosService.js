@@ -1,18 +1,23 @@
-import axios from "axios";
-
-const API = "http://localhost:3000";
+import api from './api';
 
 export default {
-  listar() {
-    return axios.get(`${API}/marinheiros`);
+  getMarinheiros() {
+    return api.get('/marinheiros');
   },
-  criar(data) {
-    return axios.post(`${API}/marinheiros`, data);
+
+  getMarinheiro(id) {
+    return api.get(`/marinheiros/${id}`);
   },
-  atualizar(id, data) {
-    return axios.put(`${API}/marinheiros/${id}`, data);
+
+  createMarinheiro(data) {
+    return api.post('/marinheiros', data);
   },
-  apagar(id) {
-    return axios.delete(`${API}/marinheiros/${id}`);
+
+  updateMarinheiro(id, data) {
+    return api.put(`/marinheiros/${id}`, data);
+  },
+
+  deleteMarinheiro(id) {
+    return api.delete(`/marinheiros/${id}`);
   }
 };

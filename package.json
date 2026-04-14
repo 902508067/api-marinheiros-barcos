@@ -2,8 +2,9 @@
   "name": "api-marinheiros-barcos",
   "version": "1.0.0",
   "description": "Trabalho API Node.js UPSKILL",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -25,3 +26,4 @@
     "oracledb": "^6.10.0"
   }
 }
+

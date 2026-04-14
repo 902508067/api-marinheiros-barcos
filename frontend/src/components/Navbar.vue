@@ -1,27 +1,22 @@
 <template>
   <nav class="navbar">
-    <ul>
-      <li><router-link to="/">Home</router-link></li>
-      <li><router-link to="/marinheiros">Marinheiros</router-link></li>
-      <li><router-link to="/barcos">Barcos</router-link></li>
-      <li><router-link to="/reservas">Reservas</router-link></li>
-    </ul>
+    <RouterLink to="/">Dashboard</RouterLink>
+    <RouterLink to="/marinheiros">Marinheiros</RouterLink>
+    <RouterLink to="/barcos">Barcos</RouterLink>
+    <RouterLink to="/reservas">Reservas</RouterLink>
   </nav>
 </template>
 
 <script setup>
+import { RouterLink } from 'vue-router'
 </script>
 
-<style>
+<style scoped>
 .navbar {
-  background: #222;
-  padding: 10px;
-}
-
-.navbar ul {
   display: flex;
   gap: 20px;
-  list-style: none;
+  background: #1e293b;
+  padding: 15px;
 }
 
 .navbar a {

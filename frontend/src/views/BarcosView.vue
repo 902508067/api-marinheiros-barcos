@@ -1,49 +1,62 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import barcosService from "../services/barcosService.js";
-import Tabela from "../components/Tabela.vue";
-import BarcoForm from "../components/BarcoForm.vue";
+import { ref, onMounted } from 'vue';
+import barcosService from '../services/barcosService';
+import BarcoForm from '../components/BarcoForm.vue';
+import Tabela from '../components/Tabela.vue';
+import Mensagem from '../components/Mensagem.vue';
 
 const barcos = ref([]);
-const selecionado = ref(null);
+const mensagemTexto = ref('');
+const mensagemTipo = ref('sucesso');
 
-async function carregar() {
-  const res = await barcosService.listar();
-  barcos.value = res.data;
-}
+const mostrarMensagem = (texto, tipo = 'sucesso') => {
+  mensagemTexto.value = texto;
+  mensagemTipo.value = tipo;
+};
 
-function editar(item) {
-  selecionado.value = { ...item };
-}
-
-async function apagar(id) {
-  await barcosService.apagar(id);
-  carregar();
-}
-
-async function guardar(barco) {
-  if (barco.id) {
-    await barcosService.atualizar(barco.id, barco);
-  } else {
-    await barcosService.criar(barco);
+const carregar = async () => {
+  try {
+    const res = await barcosService.getBarcos();
+    barcos.value = res.data;
+  } catch (e) {
+    mostrarMensagem('Erro ao carregar barcos.', 'erro');
   }
-
-  selecionado.value = null;
-  carregar();
-}
+};
 
 onMounted(carregar);
+
+const eliminar = async (id) => {
+  try {
+    await barcosService.deleteBarco(id);
+    mostrarMensagem('Barco eliminado com sucesso!');
+    await carregar();
+  } catch (e) {
+    mostrarMensagem('Erro ao eliminar barco.', 'erro');
+  }
+};
 </script>
 
 <template>
-  <h1>Gestão de Barcos</h1>
+  <div>
+    <Mensagem
+      v-if="mensagemTexto"
+      :texto="mensagemTexto"
+      :tipo="mensagemTipo"
+    />
 
-  <BarcoForm :modelo="selecionado" @guardar="guardar" />
+    <h1>Gestão de Barcos</h1>
 
-  <Tabela
-    :dados="barcos"
-    :colunas="['id_barco', 'nome', 'capacidade', 'tipo']"
-    @editar="editar"
-    @apagar="apagar"
-  />
+    <BarcoForm @barcoCriado="carregar" />
+
+    <Tabela
+      :dados="barcos"
+      :colunas="[
+        { key: 'ID_BARCO', label: 'ID' },
+        { key: 'NOME', label: 'Nome' },
+        { key: 'CAPACIDADE', label: 'Capacidade' },
+        { key: 'TIPO', label: 'Tipo' }
+      ]"
+      @delete="eliminar"
+    />
+  </div>
 </template>

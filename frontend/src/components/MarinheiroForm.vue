@@ -8,12 +8,12 @@
 
     <div class="field">
       <label for="classificacao">Classificação</label>
-      <InputNumber id="classificacao" v-model="form.classificacao" :min="0" />
+      <InputNumber id="classificacao" v-model="form.classificacao" />
     </div>
 
     <div class="field">
       <label for="idade">Idade</label>
-      <InputNumber id="idade" v-model="form.idade" :min="18" />
+      <InputNumber id="idade" v-model="form.idade" />
     </div>
 
     <div class="flex justify-content-end gap-2 mt-3">
@@ -32,11 +32,7 @@ import Button from 'primevue/button';
 export default {
   name: "MarinheiroForm",
 
-  components: {
-    InputText,
-    InputNumber,
-    Button
-  },
+  components: { InputText, InputNumber, Button },
 
   props: {
     marinheiroInicial: {
@@ -48,11 +44,25 @@ export default {
   data() {
     return {
       form: {
-        nome: this.marinheiroInicial.nome || this.marinheiroInicial.NOME || "",
-        classificacao: this.marinheiroInicial.classificacao || this.marinheiroInicial.CLASSIFICACAO || null,
-        idade: this.marinheiroInicial.idade || this.marinheiroInicial.IDADE || null
+        nome: "",
+        classificacao: "",
+        idade: ""
       }
     };
+  },
+
+  watch: {
+    marinheiroInicial: {
+      immediate: true,
+      deep: true,
+      handler(novo) {
+        this.form = {
+          nome: novo.nome || novo.NOME || "",
+          classificacao: novo.classificacao || novo.CLASSIFICACAO || "",
+          idade: novo.idade || novo.IDADE || ""
+        };
+      }
+    }
   },
 
   methods: {
@@ -62,9 +72,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.field {
-  margin-bottom: 1rem;
-}
-</style>

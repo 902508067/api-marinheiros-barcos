@@ -1,85 +1,71 @@
 <template>
-  <div class="p-4">
-    <h1 class="text-3xl font-bold mb-4">Reservas</h1>
+  <div class="container">
+    <h1>Reservas</h1>
 
-    <Loading v-if="loading" />
+    <form @submit.prevent="guardar">
+      <select v-model="form.id_barco" required>
+        <option disabled value="">Selecione um barco</option>
+        <option v-for="b in barcos" :key="b.id_barco" :value="b.id_barco">
+          {{ b.nome }}
+        </option>
+      </select>
 
-    <div v-else class="card shadow-2 p-3 border-round">
-      <DataTable 
-        :value="reservas" 
-        stripedRows 
-        responsiveLayout="scroll"
-        paginator 
-        :rows="5" 
-        :rowsPerPageOptions="[5, 10, 20]"
-      >
+      <select v-model="form.id_marinheiro" required>
+        <option disabled value="">Selecione um marinheiro</option>
+        <option v-for="m in marinheiros" :key="m.id_marinheiro" :value="m.id_marinheiro">
+          {{ m.nome }}
+        </option>
+      </select>
 
-        <Column field="ID_RESERVA" header="ID" />
-        <Column field="ID_BARCO" header="Barco" />
-        <Column field="ID_MARINHEIRO" header="Marinheiro" />
-        <Column field="DATA" header="Data" />
+      <input type="date" v-model="form.data" required />
 
-        <Column header="Ações">
-          <template #body="slotProps">
-            <Button icon="pi pi-pencil" class="p-button-rounded p-button-info mr-2"
-              @click="abrirEditar(slotProps.data)" />
-            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger"
-              @click="eliminar(slotProps.data.ID_RESERVA)" />
-          </template>
-        </Column>
-      </DataTable>
+      <button type="submit">
+        {{ editId ? "Atualizar" : "Criar" }}
+      </button>
+      <button v-if="editId" @click="cancelarEdicao" type="button">Cancelar</button>
+    </form>
 
-      <Button label="Adicionar Reserva" icon="pi pi-plus" class="p-button-success mt-4"
-        @click="abrirCriar" />
-    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Barco</th>
+          <th>Marinheiro</th>
+          <th>Data</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
 
-    <Modal 
-      :visivel="modalAberto" 
-      :titulo="isEdit ? 'Editar Reserva' : 'Criar Reserva'"
-      largura="35rem" 
-      @fechar="fecharModal"
-    >
-      <ReservaForm 
-        :reservaInicial="reservaAtual"
-        :barcos="barcos" 
-        :marinheiros="marinheiros"
-        @guardar="guardar" 
-        @cancelar="fecharModal" 
-      />
-    </Modal>
+      <tbody>
+        <tr v-for="r in reservas" :key="r.ID_RESERVA || r.id_reserva">
+          <td>{{ r.ID_RESERVA || r.id_reserva }}</td>
+          <td>{{ r.ID_BARCO || r.id_barco }}</td>
+          <td>{{ r.ID_MARINHEIRO || r.id_marinheiro }}</td>
+          <td>{{ formatarData(r.DATA || r.data) }}</td>
 
-    <Mensagem ref="toast" />
+          <td>
+            <button @click="editar(r)">Editar</button>
+            <button @click="eliminar(r.ID_RESERVA || r.id_reserva)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <script>
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Button from 'primevue/button';
-
 import reservasService from "../services/reservasService";
 import barcosService from "../services/barcosService";
 import marinheirosService from "../services/marinheirosService";
 
-import Modal from "../components/Modal.vue";
-import ReservaForm from "../components/ReservaForm.vue";
-import Mensagem from "../components/Mensagem.vue";
-import Loading from "../components/Loading.vue";
-
 export default {
-  name: "ReservasView",
-
-  components: { DataTable, Column, Button, Modal, ReservaForm, Mensagem, Loading },
-
   data() {
     return {
       reservas: [],
       barcos: [],
       marinheiros: [],
-      loading: true,
-      modalAberto: false,
-      isEdit: false,
-      reservaAtual: null
+      form: { id_barco: "", id_marinheiro: "", data: "" },
+      editId: null
     };
   },
 
@@ -89,70 +75,40 @@ export default {
 
   methods: {
     async carregarTudo() {
-      this.loading = true;
-      this.reservas = await reservasService.getAll();
-      this.barcos = await barcosService.getAll();
-      this.marinheiros = await marinheirosService.getAll();
-      this.loading = false;
+      this.reservas = (await reservasService.getAll()).data;
+      this.barcos = (await barcosService.getAll()).data;
+      this.marinheiros = (await marinheirosService.getAll()).data;
     },
 
-    abrirCriar() {
-      this.isEdit = false;
-
-      // FORM EM MINÚSCULAS
-      this.reservaAtual = { 
-        id_barco: null, 
-        id_marinheiro: null, 
-        data: null 
-      };
-
-      this.modalAberto = true;
+    formatarData(d) {
+      return d ? d.substring(0, 10) : "";
     },
 
-    abrirEditar(reserva) {
-      this.isEdit = true;
-
-      // CONVERTER MAIÚSCULAS → minúsculas
-      this.reservaAtual = {
-        id_barco: reserva.ID_BARCO,
-        id_marinheiro: reserva.ID_MARINHEIRO,
-        data: reserva.DATA,
-        ID_RESERVA: reserva.ID_RESERVA
-      };
-
-      this.modalAberto = true;
+    editar(r) {
+      this.editId = r.ID_RESERVA || r.id_reserva;
+      this.form.id_barco = r.ID_BARCO || r.id_barco;
+      this.form.id_marinheiro = r.ID_MARINHEIRO || r.id_marinheiro;
+      this.form.data = this.formatarData(r.DATA || r.data);
     },
 
-    fecharModal() {
-      this.modalAberto = false;
+    cancelarEdicao() {
+      this.editId = null;
+      this.form = { id_barco: "", id_marinheiro: "", data: "" };
     },
 
-    async guardar(reserva) {
-      try {
-        if (this.isEdit) {
-          await reservasService.update(reserva.ID_RESERVA, reserva);
-          this.$refs.toast.sucesso("Reserva atualizada!");
-        } else {
-          await reservasService.create(reserva);
-          this.$refs.toast.sucesso("Reserva criada!");
-        }
-
-        this.modalAberto = false;
-        await this.carregarTudo();
-
-      } catch {
-        this.$refs.toast.erro("Erro ao guardar reserva.");
+    async guardar() {
+      if (this.editId) {
+        await reservasService.update(this.editId, this.form);
+      } else {
+        await reservasService.create(this.form);
       }
+      this.cancelarEdicao();
+      await this.carregarTudo();
     },
 
     async eliminar(id) {
-      try {
-        await reservasService.delete(id);
-        this.reservas = this.reservas.filter(r => r.ID_RESERVA !== id);
-        this.$refs.toast.sucesso("Reserva eliminada!");
-      } catch {
-        this.$refs.toast.erro("Erro ao eliminar reserva.");
-      }
+      await reservasService.delete(id);
+      await this.carregarTudo();
     }
   }
 };

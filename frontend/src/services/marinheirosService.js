@@ -1,29 +1,25 @@
-import api from "./api";
+import axios from "axios";
+
+const API_URL = "http://localhost:3000/api/marinheiros";
 
 export default {
   getAll() {
-    return api.get("/marinheiros").then(res => res.data);
+    return axios.get(API_URL);
   },
 
-  create(data) {
-    const payload = {
-      NOME: data.nome,
-      CLASSIFICACAO: data.classificacao,
-      IDADE: data.idade
-    };
-    return api.post("/marinheiros", payload);
+  getById(id) {
+    return axios.get(`${API_URL}/${id}`);
   },
 
-  update(id, data) {
-    const payload = {
-      NOME: data.nome,
-      CLASSIFICACAO: data.classificacao,
-      IDADE: data.idade
-    };
-    return api.put(`/marinheiros/${id}`, payload);
+  create(marinheiro) {
+    return axios.post(API_URL, marinheiro);
+  },
+
+  update(id, marinheiro) {
+    return axios.put(`${API_URL}/${id}`, marinheiro);
   },
 
   delete(id) {
-    return api.delete(`/marinheiros/${id}`);
+    return axios.delete(`${API_URL}/${id}`);
   }
 };

@@ -3,31 +3,17 @@
 
     <div class="field">
       <label for="barco">Barco</label>
-      <Dropdown 
-        id="barco"
-        v-model="form.id_barco"
-        :options="barcos"
-        optionLabel="nome"
-        optionValue="id_barco"
-        placeholder="Selecione um barco"
-      />
+      <InputNumber id="barco" v-model="form.id_barco" />
     </div>
 
     <div class="field">
       <label for="marinheiro">Marinheiro</label>
-      <Dropdown 
-        id="marinheiro"
-        v-model="form.id_marinheiro"
-        :options="marinheiros"
-        optionLabel="nome"
-        optionValue="id_marinheiro"
-        placeholder="Selecione um marinheiro"
-      />
+      <InputNumber id="marinheiro" v-model="form.id_marinheiro" />
     </div>
 
     <div class="field">
       <label for="data">Data</label>
-      <Calendar id="data" v-model="form.data" dateFormat="dd/mm/yy" />
+      <InputText id="data" v-model="form.data" placeholder="YYYY-MM-DD" />
     </div>
 
     <div class="flex justify-content-end gap-2 mt-3">
@@ -39,30 +25,18 @@
 </template>
 
 <script>
-import Dropdown from 'primevue/dropdown';
-import Calendar from 'primevue/calendar';
+import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber';
 import Button from 'primevue/button';
 
 export default {
   name: "ReservaForm",
 
-  components: {
-    Dropdown,
-    Calendar,
-    Button
-  },
+  components: { InputText, InputNumber, Button },
 
   props: {
     reservaInicial: {
       type: Object,
-      required: true
-    },
-    barcos: {
-      type: Array,
-      required: true
-    },
-    marinheiros: {
-      type: Array,
       required: true
     }
   },
@@ -70,46 +44,31 @@ export default {
   data() {
     return {
       form: {
-        // aceita minúsculas OU maiúsculas
-        id_barco: this.reservaInicial.id_barco || this.reservaInicial.ID_BARCO || null,
-        id_marinheiro: this.reservaInicial.id_marinheiro || this.reservaInicial.ID_MARINHEIRO || null,
-
-        // aceita data em minúsculas OU maiúsculas
-        data: this.reservaInicial.data
-          ? new Date(this.reservaInicial.data)
-          : this.reservaInicial.DATA
-          ? new Date(this.reservaInicial.DATA)
-          : null
+        id_barco: "",
+        id_marinheiro: "",
+        data: ""
       }
     };
   },
 
+  watch: {
+    reservaInicial: {
+      immediate: true,
+      deep: true,
+      handler(novo) {
+        this.form = {
+          id_barco: novo.id_barco || novo.ID_BARCO || "",
+          id_marinheiro: novo.id_marinheiro || novo.ID_MARINHEIRO || "",
+          data: novo.data || novo.DATA || ""
+        };
+      }
+    }
+  },
+
   methods: {
     guardar() {
-      let payload = {
-        id_barco: this.form.id_barco,
-        id_marinheiro: this.form.id_marinheiro,
-        data: this.formatarData(this.form.data)
-      };
-
-      this.$emit("guardar", payload);
-    },
-
-    formatarData(dateObj) {
-      if (!dateObj) return null;
-
-      const ano = dateObj.getFullYear();
-      const mes = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const dia = String(dateObj.getDate()).padStart(2, "0");
-
-      return `${ano}-${mes}-${dia}`;
+      this.$emit("guardar", this.form);
     }
   }
 };
 </script>
-
-<style scoped>
-.field {
-  margin-bottom: 1rem;
-}
-</style>

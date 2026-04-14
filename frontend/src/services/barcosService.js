@@ -1,27 +1,25 @@
-import api from "./api";
+import axios from "axios";
+
+const API_URL = "http://localhost:3000/api/barcos";
 
 export default {
   getAll() {
-    return api.get("/barcos").then(res => res.data);
+    return axios.get(API_URL);
   },
 
-  create(data) {
-    const payload = {
-      NOME: data.nome,
-      COR: data.cor
-    };
-    return api.post("/barcos", payload);
+  getById(id) {
+    return axios.get(`${API_URL}/${id}`);
   },
 
-  update(id, data) {
-    const payload = {
-      NOME: data.nome,
-      COR: data.cor
-    };
-    return api.put(`/barcos/${id}`, payload);
+  create(barco) {
+    return axios.post(API_URL, barco);
+  },
+
+  update(id, barco) {
+    return axios.put(`${API_URL}/${id}`, barco);
   },
 
   delete(id) {
-    return api.delete(`/barcos/${id}`);
+    return axios.delete(`${API_URL}/${id}`);
   }
 };

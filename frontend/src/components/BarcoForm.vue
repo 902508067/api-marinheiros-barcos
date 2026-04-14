@@ -26,10 +26,7 @@ import Button from 'primevue/button';
 export default {
   name: "BarcoForm",
 
-  components: {
-    InputText,
-    Button
-  },
+  components: { InputText, Button },
 
   props: {
     barcoInicial: {
@@ -41,10 +38,23 @@ export default {
   data() {
     return {
       form: {
-        nome: this.barcoInicial.nome || this.barcoInicial.NOME || "",
-        cor: this.barcoInicial.cor || this.barcoInicial.COR || ""
+        nome: "",
+        cor: ""
       }
     };
+  },
+
+  watch: {
+    barcoInicial: {
+      immediate: true,
+      deep: true,
+      handler(novo) {
+        this.form = {
+          nome: novo.nome || "",
+          cor: novo.cor || ""
+        };
+      }
+    }
   },
 
   methods: {

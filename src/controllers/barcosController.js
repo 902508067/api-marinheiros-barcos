@@ -1,173 +1,146 @@
-const oracledb = require('oracledb');
-oracledb.thin = true;
+const oracledb = require("oracledb");
+const dbConfig = require("../config/dbConfig");
 
-const dbConfig = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  connectionString: process.env.DB_CONNECTION
-};
+// LISTAR TODOS
+exports.getAll = async (req, res) => {
+  let connection;
 
-// LISTAR BARCOS
-async function listarBarcos(req, res) {
   try {
-    const conn = await oracledb.getConnection(dbConfig);
-    const result = await conn.execute(
-      `SELECT * FROM Barcos ORDER BY id_barco`,
+    connection = await oracledb.getConnection(dbConfig);
+
+    const result = await connection.execute(
+      `SELECT 
+          id_barco AS id_barco,
+          nome AS nome,
+          cor AS cor
+       FROM barcos`,
       [],
       { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
-    await conn.close();
+
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao obter barcos:", err);
+    res.status(500).json({ error: "Erro ao obter barcos" });
+  } finally {
+    if (connection) await connection.close();
   }
-}
+};
 
-// OBTER BARCO
-async function obterBarco(req, res) {
-  const { id } = req.params;
+// OBTER UM
+exports.getById = async (req, res) => {
+  let connection;
 
   try {
-    const conn = await oracledb.getConnection(dbConfig);
-    const result = await conn.execute(
-      `SELECT * FROM Barcos WHERE id_barco = :id`,
-      { id },
+    connection = await oracledb.getConnection(dbConfig);
+
+    const result = await connection.execute(
+      `SELECT 
+          id_barco AS id_barco,
+          nome AS nome,
+          cor AS cor
+       FROM barcos
+       WHERE id_barco = :id`,
+      [req.params.id],
       { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
-    await conn.close();
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Barco não encontrado." });
+      return res.status(404).json({ error: "Barco não encontrado" });
     }
 
     res.json(result.rows[0]);
-
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao obter barco:", err);
+    res.status(500).json({ error: "Erro ao obter barco" });
+  } finally {
+    if (connection) await connection.close();
   }
-}
+};
 
-// CRIAR BARCO
-async function criarBarco(req, res) {
-  const nome = req.body.nome || req.body.NOME;
-  const cor = req.body.cor || req.body.COR;
+// CRIAR
+exports.create = async (req, res) => {
+  let connection;
 
   try {
-    const conn = await oracledb.getConnection(dbConfig);
+    const { nome, cor } = req.body;
 
-    await conn.execute(
-      `INSERT INTO Barcos (id_barco, nome, cor)
-       VALUES (seq_barcos.NEXTVAL, :nome, :cor)`,
-      { nome, cor }
+    connection = await oracledb.getConnection(dbConfig);
+
+    const result = await connection.execute(
+      `INSERT INTO barcos (nome, cor)
+       VALUES (:nome, :cor)
+       RETURNING id_barco INTO :id`,
+      {
+        nome,
+        cor,
+        id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+      },
+      { autoCommit: true }
     );
 
-    await conn.commit();  
-    await conn.close();
-
-    res.json({ message: "Barco criado com sucesso!" });
-
+    res.json({
+      id_barco: result.outBinds.id[0],
+      nome,
+      cor
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao criar barco:", err);
+    res.status(500).json({ error: "Erro ao criar barco" });
+  } finally {
+    if (connection) await connection.close();
   }
-}
+};
 
-// ATUALIZAR BARCO
-async function atualizarBarco(req, res) {
-  const { id } = req.params;
-
-  const nome = req.body.nome || req.body.NOME;
-  const cor = req.body.cor || req.body.COR;
+// ATUALIZAR
+exports.update = async (req, res) => {
+  let connection;
 
   try {
-    const conn = await oracledb.getConnection(dbConfig);
+    const { nome, cor } = req.body;
 
-    await conn.execute(
-      `UPDATE Barcos
-       SET nome = :nome, cor = :cor
+    connection = await oracledb.getConnection(dbConfig);
+
+    await connection.execute(
+      `UPDATE barcos
+       SET nome = :nome,
+           cor = :cor
        WHERE id_barco = :id`,
-      { nome, cor, id }
+      {
+        nome,
+        cor,
+        id: req.params.id
+      },
+      { autoCommit: true }
     );
 
-    await conn.commit();  
-    await conn.close();
-
-    res.json({ message: "Barco atualizado com sucesso!" });
-
+    res.json({ message: "Barco atualizado com sucesso" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao atualizar barco:", err);
+    res.status(500).json({ error: "Erro ao atualizar barco" });
+  } finally {
+    if (connection) await connection.close();
   }
-}
+};
 
-// ELIMINAR BARCO
-async function eliminarBarco(req, res) {
-  const { id } = req.params;
+// ELIMINAR
+exports.delete = async (req, res) => {
+  let connection;
 
   try {
-    const conn = await oracledb.getConnection(dbConfig);
+    connection = await oracledb.getConnection(dbConfig);
 
-    const check = await conn.execute(
-      `SELECT COUNT(*) AS total
-       FROM Reservas
-       WHERE id_barco = :id`,
-      { id },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    await connection.execute(
+      `DELETE FROM barcos WHERE id_barco = :id`,
+      [req.params.id],
+      { autoCommit: true }
     );
 
-    if (check.rows[0].TOTAL > 0) {
-      await conn.close();
-      return res.status(400).json({
-        error: "Não é possível eliminar o barco porque tem reservas associadas."
-      });
-    }
-
-    await conn.execute(
-      `DELETE FROM Barcos WHERE id_barco = :id`,
-      { id }
-    );
-
-    await conn.commit();  
-    await conn.close();
-
-    res.json({ message: "Barco eliminado com sucesso!" });
-
+    res.json({ message: "Barco eliminado com sucesso" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao eliminar barco:", err);
+    res.status(500).json({ error: "Erro ao eliminar barco" });
+  } finally {
+    if (connection) await connection.close();
   }
-}
-
-// LISTAR BARCOS DISPONÍVEIS POR DATA
-async function listarBarcosDisponiveis(req, res) {
-  const { data } = req.params;
-
-  try {
-    const conn = await oracledb.getConnection(dbConfig);
-
-    const result = await conn.execute(
-      `SELECT b.*
-       FROM Barcos b
-       WHERE b.id_barco NOT IN (
-         SELECT id_barco
-         FROM Reservas
-         WHERE data = TO_DATE(:data, 'YYYY-MM-DD')
-       )
-       ORDER BY b.id_barco`,
-      { data },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
-
-    await conn.close();
-    res.json(result.rows);
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-module.exports = {
-  listarBarcos,
-  obterBarco,
-  criarBarco,
-  atualizarBarco,
-  eliminarBarco,
-  listarBarcosDisponiveis
 };

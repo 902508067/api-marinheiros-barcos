@@ -1,191 +1,111 @@
-const oracledb = require('oracledb');
-oracledb.thin = true;
+const oracledb = require("oracledb");
+const dbConfig = require("../config/dbConfig");
 
-const dbConfig = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  connectionString: process.env.DB_CONNECTION
-};
-
-// LISTAR MARINHEIROS
-async function listarMarinheiros(req, res) {
+exports.getAll = async (req, res) => {
+  let connection;
   try {
-    const conn = await oracledb.getConnection(dbConfig);
-    const result = await conn.execute(
-      `SELECT * FROM Marinheiros ORDER BY id_marinheiro`,
+    connection = await oracledb.getConnection(dbConfig);
+    const result = await connection.execute(
+      `SELECT id_marinheiro, nome, idade FROM marinheiros`,
       [],
       { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
-    await conn.close();
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao obter marinheiros:", err);
+    res.status(500).json({ error: "Erro ao obter marinheiros" });
+  } finally {
+    if (connection) await connection.close();
   }
-}
+};
 
-// LISTAR POR CLASSIFICAÇÃO
-async function listarPorClassificacao(req, res) {
-  const classificacao = req.params.classificacao;
-
+exports.getById = async (req, res) => {
+  let connection;
   try {
-    const conn = await oracledb.getConnection(dbConfig);
-    const result = await conn.execute(
-      `SELECT * FROM Marinheiros WHERE classificacao = :classificacao ORDER BY id_marinheiro`,
-      { classificacao },
+    connection = await oracledb.getConnection(dbConfig);
+    const result = await connection.execute(
+      `SELECT id_marinheiro, nome, idade FROM marinheiros WHERE id_marinheiro = :id`,
+      [req.params.id],
       { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
-    await conn.close();
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-// OBTER MARINHEIRO
-async function obterMarinheiro(req, res) {
-  const { id } = req.params;
-
-  try {
-    const conn = await oracledb.getConnection(dbConfig);
-    const result = await conn.execute(
-      `SELECT * FROM Marinheiros WHERE id_marinheiro = :id`,
-      { id },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
-    await conn.close();
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Marinheiro não encontrado." });
-    }
+    if (result.rows.length === 0)
+      return res.status(404).json({ error: "Marinheiro não encontrado" });
 
     res.json(result.rows[0]);
-
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao obter marinheiro:", err);
+    res.status(500).json({ error: "Erro ao obter marinheiro" });
+  } finally {
+    if (connection) await connection.close();
   }
-}
+};
 
-// CRIAR MARINHEIRO
-async function criarMarinheiro(req, res) {
-  const nome = req.body.nome || req.body.NOME;
-  const classificacao = req.body.classificacao || req.body.CLASSIFICACAO;
-  const idade = req.body.idade || req.body.IDADE;
-
+exports.create = async (req, res) => {
+  let connection;
   try {
-    const conn = await oracledb.getConnection(dbConfig);
+    const { nome, idade } = req.body;
+    connection = await oracledb.getConnection(dbConfig);
 
-    await conn.execute(
-      `INSERT INTO Marinheiros (id_marinheiro, nome, classificacao, idade)
-       VALUES (seq_marinheiros.NEXTVAL, :nome, :classificacao, :idade)`,
-      { nome, classificacao, idade }
+    const result = await connection.execute(
+      `INSERT INTO marinheiros (nome, idade)
+       VALUES (:nome, :idade)
+       RETURNING id_marinheiro INTO :id`,
+      {
+        nome,
+        idade,
+        id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+      },
+      { autoCommit: true }
     );
 
-    await conn.commit();
-    await conn.close();
-
-    res.json({ message: "Marinheiro criado com sucesso!" });
-
+    res.json({
+      id_marinheiro: result.outBinds.id[0],
+      nome,
+      idade
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao criar marinheiro:", err);
+    res.status(500).json({ error: "Erro ao criar marinheiro" });
+  } finally {
+    if (connection) await connection.close();
   }
-}
+};
 
-// ATUALIZAR MARINHEIRO
-async function atualizarMarinheiro(req, res) {
-  const { id } = req.params;
-
-  const nome = req.body.nome || req.body.NOME;
-  const classificacao = req.body.classificacao || req.body.CLASSIFICACAO;
-  const idade = req.body.idade || req.body.IDADE;
-
+exports.update = async (req, res) => {
+  let connection;
   try {
-    const conn = await oracledb.getConnection(dbConfig);
+    const { nome, idade } = req.body;
+    connection = await oracledb.getConnection(dbConfig);
 
-    await conn.execute(
-      `UPDATE Marinheiros
-       SET nome = :nome, classificacao = :classificacao, idade = :idade
-       WHERE id_marinheiro = :id`,
-      { nome, classificacao, idade, id }
+    await connection.execute(
+      `UPDATE marinheiros SET nome = :nome, idade = :idade WHERE id_marinheiro = :id`,
+      { nome, idade, id: req.params.id },
+      { autoCommit: true }
     );
 
-    await conn.commit();
-    await conn.close();
-
-    res.json({ message: "Marinheiro atualizado com sucesso!" });
-
+    res.json({ message: "Marinheiro atualizado com sucesso" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao atualizar marinheiro:", err);
+    res.status(500).json({ error: "Erro ao atualizar marinheiro" });
+  } finally {
+    if (connection) await connection.close();
   }
-}
+};
 
-// ATUALIZAR APENAS A CLASSIFICAÇÃO
-async function atualizarClassificacao(req, res) {
-  const { id } = req.params;
-  const classificacao = req.body.classificacao || req.body.CLASSIFICACAO;
-
+exports.delete = async (req, res) => {
+  let connection;
   try {
-    const conn = await oracledb.getConnection(dbConfig);
-
-    await conn.execute(
-      `UPDATE Marinheiros
-       SET classificacao = :classificacao
-       WHERE id_marinheiro = :id`,
-      { classificacao, id }
+    connection = await oracledb.getConnection(dbConfig);
+    await connection.execute(
+      `DELETE FROM marinheiros WHERE id_marinheiro = :id`,
+      [req.params.id],
+      { autoCommit: true }
     );
-
-    await conn.commit();
-    await conn.close();
-
-    res.json({ message: "Classificação atualizada com sucesso!" });
-
+    res.json({ message: "Marinheiro eliminado com sucesso" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Erro ao eliminar marinheiro:", err);
+    res.status(500).json({ error: "Erro ao eliminar marinheiro" });
+  } finally {
+    if (connection) await connection.close();
   }
-}
-
-// ELIMINAR MARINHEIRO
-async function eliminarMarinheiro(req, res) {
-  const { id } = req.params;
-
-  try {
-    const conn = await oracledb.getConnection(dbConfig);
-
-    const check = await conn.execute(
-      `SELECT COUNT(*) AS total
-       FROM Reservas
-       WHERE id_marinheiro = :id`,
-      { id },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
-
-    if (check.rows[0].TOTAL > 0) {
-      await conn.close();
-      return res.status(400).json({
-        error: "Não é possível eliminar o marinheiro porque tem reservas associadas."
-      });
-    }
-
-    await conn.execute(
-      `DELETE FROM Marinheiros WHERE id_marinheiro = :id`,
-      { id }
-    );
-
-    await conn.commit();
-    await conn.close();
-
-    res.json({ message: "Marinheiro eliminado com sucesso!" });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-module.exports = {
-  listarMarinheiros,
-  listarPorClassificacao,
-  obterMarinheiro,
-  criarMarinheiro,
-  atualizarMarinheiro,
-  atualizarClassificacao,
-  eliminarMarinheiro
 };

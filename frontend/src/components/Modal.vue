@@ -6,40 +6,23 @@
     :style="{ width: largura }"
     @hide="$emit('fechar')"
   >
-    <!-- Título -->
+    <!-- Cabeçalho -->
     <template #header>
       <h2 class="text-xl font-bold m-0">{{ titulo }}</h2>
     </template>
 
-    <!-- Conteúdo -->
-    <div class="mt-2">
-      <slot />
-    </div>
-
-    <!-- Rodapé -->
-    <template #footer>
-      <div class="flex justify-content-end gap-3">
-        <Button 
-          label="Cancelar" 
-          icon="pi pi-times" 
-          class="p-button-secondary"
-          @click="$emit('fechar')"
-        />
-
-        <Button 
-          label="Guardar" 
-          icon="pi pi-check" 
-          class="p-button-success"
-          @click="$emit('guardar')"
-        />
+    <!-- CONTEÚDO CORRETO -->
+    <template #default>
+      <div class="mt-2">
+        <slot />
       </div>
     </template>
+
   </Dialog>
 </template>
 
 <script>
 import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
 
 export default {
   name: "Modal",
@@ -54,12 +37,7 @@ export default {
   },
 
   components: {
-    Dialog,
-    Button
+    Dialog
   }
 };
 </script>
-
-<style scoped>
-/* Nada de CSS manual — o PrimeVue já trata do design */
-</style>

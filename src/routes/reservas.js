@@ -1,23 +1,11 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
+const reservasController = require("../controllers/reservasController");
 
-const {
-  criarReserva,
-  listarReservas,
-  listarReservasPorMarinheiro,
-  listarReservasPorBarco,
-  eliminarReserva,
-  atualizarReserva
-} = require('../controllers/reservasController');
-
-router.post('/reservas', criarReserva);
-router.get('/reservas', listarReservas);
-router.get('/reservas/marinheiro/:id', listarReservasPorMarinheiro);
-router.get('/reservas/barco/:id', listarReservasPorBarco);
-
-
-router.put('/reservas/:id', atualizarReserva);
-
-router.delete('/reservas/:id', eliminarReserva);
+router.get("/reservas", reservasController.getAll);
+router.get("/reservas/:id", reservasController.getById);
+router.post("/reservas", reservasController.create);
+router.put("/reservas/:id", reservasController.update);
+router.delete("/reservas/:id", reservasController.delete);
 
 module.exports = router;

@@ -1,16 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/marinheirosController');
+const marinheirosController = require('../controllers/marinheirosController');
 
-router.get('/marinheiros', controller.listarMarinheiros);
-router.get('/marinheiros/classificacao/:classificacao', controller.listarPorClassificacao);
-router.get('/marinheiros/:id', controller.obterMarinheiro);
-
-router.post('/marinheiros', controller.criarMarinheiro);
-
-router.patch('/marinheiros/:id/classificacao', controller.atualizarClassificacao);
-router.put('/marinheiros/:id', controller.atualizarMarinheiro);
-
-router.delete('/marinheiros/:id', controller.eliminarMarinheiro);
+router.get('/marinheiros', marinheirosController.getAll);
+router.get('/marinheiros/:id', marinheirosController.getById);
+router.post('/marinheiros', marinheirosController.create);
+router.put('/marinheiros/:id', marinheirosController.update);
+router.delete('/marinheiros/:id', marinheirosController.delete);
 
 module.exports = router;

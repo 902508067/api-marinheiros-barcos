@@ -23,6 +23,42 @@ async function listarReservas(req, res) {
   }
 }
 
+// LISTAR RESERVAS POR MARINHEIRO
+async function listarReservasPorMarinheiro(req, res) {
+  const { id } = req.params;
+
+  try {
+    const conn = await oracledb.getConnection(dbConfig);
+    const result = await conn.execute(
+      `SELECT * FROM Reservas WHERE id_marinheiro = :id ORDER BY id_reserva`,
+      { id },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    );
+    await conn.close();
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+// LISTAR RESERVAS POR BARCO
+async function listarReservasPorBarco(req, res) {
+  const { id } = req.params;
+
+  try {
+    const conn = await oracledb.getConnection(dbConfig);
+    const result = await conn.execute(
+      `SELECT * FROM Reservas WHERE id_barco = :id ORDER BY id_reserva`,
+      { id },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    );
+    await conn.close();
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 // OBTER RESERVA
 async function obterReserva(req, res) {
   const { id } = req.params;
@@ -49,15 +85,17 @@ async function obterReserva(req, res) {
 
 // CRIAR RESERVA
 async function criarReserva(req, res) {
-  const { id_marinheiro, id_barco, data } = req.body;
+  const id_barco = req.body.id_barco || req.body.ID_BARCO;
+  const id_marinheiro = req.body.id_marinheiro || req.body.ID_MARINHEIRO;
+  const data = req.body.data || req.body.DATA;
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
 
     await conn.execute(
-      `INSERT INTO Reservas (id_reserva, id_marinheiro, id_barco, data)
-       VALUES (seq_reservas.NEXTVAL, :id_marinheiro, :id_barco, TO_DATE(:data, 'YYYY-MM-DD'))`,
-      { id_marinheiro, id_barco, data }
+      `INSERT INTO Reservas (id_reserva, id_barco, id_marinheiro, data)
+       VALUES (seq_reservas.NEXTVAL, :id_barco, :id_marinheiro, TO_DATE(:data, 'YYYY-MM-DD'))`,
+      { id_barco, id_marinheiro, data }
     );
 
     await conn.commit();
@@ -70,131 +108,24 @@ async function criarReserva(req, res) {
   }
 }
 
-// LISTAR RESERVAS POR MARINHEIRO
-async function listarReservasPorMarinheiro(req, res) {
-  const { id } = req.params;
-
-  try {
-    const conn = await oracledb.getConnection(dbConfig);
-    const result = await conn.execute(
-      `SELECT * FROM Reservas WHERE id_marinheiro = :id ORDER BY data`,
-      { id },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
-    await conn.close();
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-// LISTAR RESERVAS POR BARCO
-async function listarReservasPorBarco(req, res) {
-  const { id } = req.params;
-
-  try {
-    const conn = await oracledb.getConnection(dbConfig);
-    const result = await conn.execute(
-      `SELECT * FROM Reservas WHERE id_barco = :id ORDER BY data`,
-      { id },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
-    await conn.close();
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-// ELIMINAR RESERVA
-async function eliminarReserva(req, res) {
-  const { id } = req.params;
-
-  try {
-    const conn = await oracledb.getConnection(dbConfig);
-
-    const result = await conn.execute(
-      `DELETE FROM Reservas WHERE id_reserva = :id`,
-      { id }
-    );
-
-    await conn.commit();
-    await conn.close();
-
-    if (result.rowsAffected === 0) {
-      return res.status(404).json({ error: "Reserva não encontrada." });
-    }
-
-    res.json({ message: "Reserva eliminada com sucesso!" });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
 // ATUALIZAR RESERVA
 async function atualizarReserva(req, res) {
   const { id } = req.params;
-  const { id_marinheiro, id_barco, data } = req.body;
+
+  const id_barco = req.body.id_barco || req.body.ID_BARCO;
+  const id_marinheiro = req.body.id_marinheiro || req.body.ID_MARINHEIRO;
+  const data = req.body.data || req.body.DATA;
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
 
-    const checkReserva = await conn.execute(
-      `SELECT COUNT(*) AS total FROM Reservas WHERE id_reserva = :id`,
-      { id },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
-
-    if (checkReserva.rows[0].TOTAL === 0) {
-      await conn.close();
-      return res.status(404).json({ error: "Reserva não encontrada." });
-    }
-
-    const checkMarinheiro = await conn.execute(
-      `SELECT COUNT(*) AS total FROM Marinheiros WHERE id_marinheiro = :id_marinheiro`,
-      { id_marinheiro },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
-
-    if (checkMarinheiro.rows[0].TOTAL === 0) {
-      await conn.close();
-      return res.status(400).json({ error: "Marinheiro não existe." });
-    }
-
-    const checkBarco = await conn.execute(
-      `SELECT COUNT(*) AS total FROM Barcos WHERE id_barco = :id_barco`,
-      { id_barco },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
-
-    if (checkBarco.rows[0].TOTAL === 0) {
-      await conn.close();
-      return res.status(400).json({ error: "Barco não existe." });
-    }
-
-    const checkDisponivel = await conn.execute(
-      `SELECT COUNT(*) AS total
-       FROM Reservas
-       WHERE id_barco = :id_barco
-       AND data = TO_DATE(:data, 'YYYY-MM-DD')
-       AND id_reserva != :id`,
-      { id_barco, data, id },
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
-
-    if (checkDisponivel.rows[0].TOTAL > 0) {
-      await conn.close();
-      return res.status(400).json({ error: "O barco já está reservado nessa data." });
-    }
-
     await conn.execute(
       `UPDATE Reservas
-       SET id_marinheiro = :id_marinheiro,
-           id_barco = :id_barco,
+       SET id_barco = :id_barco,
+           id_marinheiro = :id_marinheiro,
            data = TO_DATE(:data, 'YYYY-MM-DD')
        WHERE id_reserva = :id`,
-      { id_marinheiro, id_barco, data, id }
+      { id_barco, id_marinheiro, data, id }
     );
 
     await conn.commit();
@@ -207,12 +138,34 @@ async function atualizarReserva(req, res) {
   }
 }
 
+// ELIMINAR RESERVA
+async function eliminarReserva(req, res) {
+  const { id } = req.params;
+
+  try {
+    const conn = await oracledb.getConnection(dbConfig);
+
+    await conn.execute(
+      `DELETE FROM Reservas WHERE id_reserva = :id`,
+      { id }
+    );
+
+    await conn.commit();
+    await conn.close();
+
+    res.json({ message: "Reserva eliminada com sucesso!" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 module.exports = {
   listarReservas,
-  obterReserva,
-  criarReserva,
-  eliminarReserva,
   listarReservasPorMarinheiro,
   listarReservasPorBarco,
-  atualizarReserva
+  obterReserva,
+  criarReserva,
+  atualizarReserva,
+  eliminarReserva
 };

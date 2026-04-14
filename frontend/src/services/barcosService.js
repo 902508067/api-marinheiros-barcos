@@ -1,65 +1,27 @@
-import axios from "axios";
-
-const API_URL = "http://localhost:3000/barcos";
+import api from "./api";
 
 export default {
-  async getAll() {
-    try {
-      const response = await axios.get(API_URL);
-      return Array.isArray(response.data) ? response.data : [];
-    } catch (error) {
-      console.error("Erro ao obter barcos:", error);
-      return [];
-    }
+  getAll() {
+    return api.get("/barcos").then(res => res.data);
   },
 
-  async getById(id) {
-    try {
-      const response = await axios.get(`${API_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error("Erro ao obter barco:", error);
-      return null;
-    }
+  create(data) {
+    const payload = {
+      NOME: data.nome,
+      COR: data.cor
+    };
+    return api.post("/barcos", payload);
   },
 
-  async create(data) {
-    try {
-      const payload = {
-        nome: data.nome,
-        cor: data.cor
-      };
-
-      const response = await axios.post(API_URL, payload);
-      return response.data;
-    } catch (error) {
-      console.error("Erro ao criar barco:", error);
-      return null;
-    }
+  update(id, data) {
+    const payload = {
+      NOME: data.nome,
+      COR: data.cor
+    };
+    return api.put(`/barcos/${id}`, payload);
   },
 
-  async update(id, data) {
-    try {
-      const payload = {
-        nome: data.nome,
-        cor: data.cor
-      };
-
-      const response = await axios.put(`${API_URL}/${id}`, payload);
-      return response.data;
-    } catch (error) {
-      console.error("Erro ao atualizar barco:", error);
-      return null;
-    }
-  },
-
-  async delete(id) {
-    try {
-      await axios.delete(`${API_URL}/${id}`);
-      return true;
-    } catch (error) {
-      console.error("Erro ao eliminar barco:", error);
-      return false;
-    }
+  delete(id) {
+    return api.delete(`/barcos/${id}`);
   }
 };

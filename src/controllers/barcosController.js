@@ -49,7 +49,8 @@ async function obterBarco(req, res) {
 
 // CRIAR BARCO
 async function criarBarco(req, res) {
-  const { nome, cor } = req.body;
+  const nome = req.body.nome || req.body.NOME;
+  const cor = req.body.cor || req.body.COR;
 
   try {
     const conn = await oracledb.getConnection(dbConfig);
@@ -73,7 +74,9 @@ async function criarBarco(req, res) {
 // ATUALIZAR BARCO
 async function atualizarBarco(req, res) {
   const { id } = req.params;
-  const { nome, cor } = req.body;
+
+  const nome = req.body.nome || req.body.NOME;
+  const cor = req.body.cor || req.body.COR;
 
   try {
     const conn = await oracledb.getConnection(dbConfig);

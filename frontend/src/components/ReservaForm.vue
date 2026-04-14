@@ -7,8 +7,8 @@
         id="barco"
         v-model="form.id_barco"
         :options="barcos"
-        optionLabel="NOME"
-        optionValue="ID_BARCO"
+        optionLabel="nome"
+        optionValue="id_barco"
         placeholder="Selecione um barco"
       />
     </div>
@@ -19,8 +19,8 @@
         id="marinheiro"
         v-model="form.id_marinheiro"
         :options="marinheiros"
-        optionLabel="NOME"
-        optionValue="ID_MARINHEIRO"
+        optionLabel="nome"
+        optionValue="id_marinheiro"
         placeholder="Selecione um marinheiro"
       />
     </div>

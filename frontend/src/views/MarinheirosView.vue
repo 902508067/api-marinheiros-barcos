@@ -5,55 +5,32 @@
     <Loading v-if="loading" />
 
     <div v-else class="card shadow-2 p-3 border-round">
-      <DataTable 
-        :value="marinheiros" 
-        stripedRows 
-        responsiveLayout="scroll"
-        paginator 
-        :rows="5"
-        :rowsPerPageOptions="[5, 10, 20]"
-      >
-        <Column field="ID_MARINHEIRO" header="ID" style="width: 100px"></Column>
-        <Column field="NOME" header="Nome"></Column>
-        <Column field="CLASSIFICACAO" header="Classificação"></Column>
-        <Column field="IDADE" header="Idade"></Column>
+      <DataTable :value="marinheiros" stripedRows responsiveLayout="scroll"
+        paginator :rows="5" :rowsPerPageOptions="[5, 10, 20]">
 
-        <Column header="Ações" style="width: 150px">
+        <Column field="ID_MARINHEIRO" header="ID" />
+        <Column field="NOME" header="Nome" />
+        <Column field="CLASSIFICACAO" header="Classificação" />
+        <Column field="IDADE" header="Idade" />
+
+        <Column header="Ações">
           <template #body="slotProps">
-            <Button 
-              icon="pi pi-pencil" 
-              class="p-button-rounded p-button-info mr-2"
-              @click="abrirEditar(slotProps.data)"
-            />
-            <Button 
-              icon="pi pi-trash" 
-              class="p-button-rounded p-button-danger"
-              @click="eliminar(slotProps.data.ID_MARINHEIRO)"
-            />
+            <Button icon="pi pi-pencil" class="p-button-rounded p-button-info mr-2"
+              @click="abrirEditar(slotProps.data)" />
+            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger"
+              @click="eliminar(slotProps.data.ID_MARINHEIRO)" />
           </template>
         </Column>
       </DataTable>
 
-      <Button 
-        label="Adicionar Marinheiro" 
-        icon="pi pi-plus" 
-        class="p-button-success mt-4"
-        @click="abrirCriar"
-      />
+      <Button label="Adicionar Marinheiro" icon="pi pi-plus" class="p-button-success mt-4"
+        @click="abrirCriar" />
     </div>
 
-    <Modal 
-      :visivel="modalAberto"
-      :titulo="isEdit ? 'Editar Marinheiro' : 'Criar Marinheiro'"
-      largura="35rem"
-      @fechar="fecharModal"
-      @guardar="guardar"
-    >
-      <MarinheiroForm 
-        :marinheiroInicial="marinheiroAtual"
-        @guardar="guardar"
-        @cancelar="fecharModal"
-      />
+    <Modal :visivel="modalAberto" :titulo="isEdit ? 'Editar Marinheiro' : 'Criar Marinheiro'"
+      largura="35rem" @fechar="fecharModal">
+      <MarinheiroForm :marinheiroInicial="marinheiroAtual"
+        @guardar="guardar" @cancelar="fecharModal" />
     </Modal>
 
     <Mensagem ref="toast" />
@@ -75,21 +52,12 @@ import Loading from "../components/Loading.vue";
 export default {
   name: "MarinheirosView",
 
-  components: {
-    DataTable,
-    Column,
-    Button,
-    Modal,
-    MarinheiroForm,
-    Mensagem,
-    Loading
-  },
+  components: { DataTable, Column, Button, Modal, MarinheiroForm, Mensagem, Loading },
 
   data() {
     return {
       marinheiros: [],
       loading: true,
-
       modalAberto: false,
       isEdit: false,
       marinheiroAtual: null
@@ -109,11 +77,7 @@ export default {
 
     abrirCriar() {
       this.isEdit = false;
-      this.marinheiroAtual = { 
-        NOME: "", 
-        CLASSIFICACAO: 0,
-        IDADE: 18
-      };
+      this.marinheiroAtual = { NOME: "", CLASSIFICACAO: 0, IDADE: 18 };
       this.modalAberto = true;
     },
 
@@ -130,16 +94,14 @@ export default {
     async guardar(marinheiro) {
       try {
         if (this.isEdit) {
-          await marinheirosService.updateMarinheiro(marinheiro.ID_MARINHEIRO, marinheiro);
+          await marinheirosService.update(marinheiro.ID_MARINHEIRO, marinheiro);
           this.$refs.toast.sucesso("Marinheiro atualizado!");
         } else {
-          await marinheirosService.createMarinheiro(marinheiro);
+          await marinheirosService.create(marinheiro);
           this.$refs.toast.sucesso("Marinheiro criado!");
         }
-
         this.modalAberto = false;
         await this.carregar();
-
       } catch {
         this.$refs.toast.erro("Erro ao guardar marinheiro.");
       }
@@ -147,7 +109,7 @@ export default {
 
     async eliminar(id) {
       try {
-        await marinheirosService.deleteMarinheiro(id);
+        await marinheirosService.delete(id);
         this.marinheiros = this.marinheiros.filter(m => m.ID_MARINHEIRO !== id);
         this.$refs.toast.sucesso("Marinheiro eliminado!");
       } catch {
@@ -157,9 +119,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.shadow-2 {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-}
-</style>

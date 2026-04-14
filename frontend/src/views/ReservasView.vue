@@ -1,212 +1,174 @@
 <template>
-  <div class="page-container">
-    <h1 class="page-title">Reservas</h1>
+  <div class="p-4">
+    <h1 class="text-3xl font-bold mb-4">Reservas</h1>
 
-    <!-- Barra de pesquisa estilo Booking -->
-    <div class="search-bar">
-      <input
-        v-model="filtroTexto"
-        type="text"
-        placeholder="Pesquisar por barco, marinheiro ou destino"
+    <!-- LOADING -->
+    <Loading v-if="loading" />
+
+    <div v-else class="card shadow-2 p-3 border-round">
+      <DataTable 
+        :value="reservas" 
+        stripedRows 
+        responsiveLayout="scroll"
+        paginator 
+        :rows="5"
+        :rowsPerPageOptions="[5, 10, 20]"
+      >
+        <Column field="ID_RESERVA" header="ID" style="width: 100px"></Column>
+        <Column field="NOME_BARCO" header="Barco"></Column>
+        <Column field="NOME_MARINHEIRO" header="Marinheiro"></Column>
+        <Column field="DATA" header="Data"></Column>
+
+        <Column header="Ações" style="width: 150px">
+          <template #body="slotProps">
+            <Button 
+              icon="pi pi-pencil" 
+              class="p-button-rounded p-button-info mr-2"
+              @click="abrirEditar(slotProps.data)"
+            />
+            <Button 
+              icon="pi pi-trash" 
+              class="p-button-rounded p-button-danger"
+              @click="eliminarReserva(slotProps.data.ID_RESERVA)"
+            />
+          </template>
+        </Column>
+      </DataTable>
+
+      <Button 
+        label="Adicionar Reserva" 
+        icon="pi pi-plus" 
+        class="p-button-success mt-4"
+        @click="abrirCriar"
       />
-
-      <input v-model="dataInicio" type="date" />
-      <input v-model="dataFim" type="date" />
-
-      <button @click="aplicarFiltros">Procurar</button>
     </div>
 
-    <!-- Cards das reservas -->
-    <div class="reservas-grid">
-      <div v-for="reserva in reservasFiltradas" :key="reserva.id" class="reserva-card">
-        <div class="reserva-header">
-          <h3>{{ reserva.barco?.nome || "Barco" }}</h3>
-          <span class="reserva-datas">
-            {{ reserva.dataInicio }} → {{ reserva.dataFim }}
-          </span>
-        </div>
+    <!-- MODAL -->
+    <Modal 
+      :visivel="modalAberto"
+      :titulo="isEdit ? 'Editar Reserva' : 'Criar Reserva'"
+      largura="35rem"
+      @fechar="fecharModal"
+      @guardar="guardarReserva"
+    >
+      <ReservaForm 
+        :reservaInicial="reservaAtual"
+        :barcos="barcos"
+        :marinheiros="marinheiros"
+        @guardar="guardarReserva"
+        @cancelar="fecharModal"
+      />
+    </Modal>
 
-        <p class="reserva-info">
-          Marinheiro: <strong>{{ reserva.marinheiro?.nome }}</strong>
-        </p>
-
-        <p class="reserva-info">
-          Preço total: <strong>€ {{ reserva.precoTotal }}</strong>
-        </p>
-
-        <div class="reserva-footer">
-          <button @click="editarReserva(reserva)">Editar</button>
-          <button class="delete-btn" @click="eliminarReserva(reserva.id)">Eliminar</button>
-        </div>
-      </div>
-    </div>
-
-    <button class="add-button" @click="criarReserva">
-      + Criar Reserva
-    </button>
+    <!-- TOAST -->
+    <Mensagem ref="toast" />
   </div>
 </template>
 
 <script>
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Button from 'primevue/button';
+
 import reservasService from "../services/reservasService";
+import barcosService from "../services/barcosService";
+import marinheirosService from "../services/marinheirosService";
+
+import Modal from "../components/Modal.vue";
+import ReservaForm from "../components/ReservaForm.vue";
+import Mensagem from "../components/Mensagem.vue";
+import Loading from "../components/Loading.vue";
 
 export default {
   name: "ReservasView",
 
+  components: {
+    DataTable,
+    Column,
+    Button,
+    Modal,
+    ReservaForm,
+    Mensagem,
+    Loading
+  },
+
   data() {
     return {
       reservas: [],
-      filtroTexto: "",
-      dataInicio: "",
-      dataFim: "",
+      barcos: [],
+      marinheiros: [],
+      loading: true,
+
+      modalAberto: false,
+      isEdit: false,
+      reservaAtual: null
     };
   },
 
   async created() {
-    this.reservas = await reservasService.getAll();
-  },
-
-  computed: {
-    reservasFiltradas() {
-      return this.reservas.filter((r) => {
-        const texto = this.filtroTexto.toLowerCase();
-
-        const matchTexto =
-          r.barco?.nome.toLowerCase().includes(texto) ||
-          r.marinheiro?.nome.toLowerCase().includes(texto);
-
-        const matchDataInicio = this.dataInicio
-          ? r.dataInicio >= this.dataInicio
-          : true;
-
-        const matchDataFim = this.dataFim
-          ? r.dataFim <= this.dataFim
-          : true;
-
-        return matchTexto && matchDataInicio && matchDataFim;
-      });
-    },
+    await this.carregarTudo();
   },
 
   methods: {
-    aplicarFiltros() {
-      // A filtragem já é reativa via computed
+    async carregarTudo() {
+      this.loading = true;
+
+      this.reservas = await reservasService.getAll();
+      this.barcos = await barcosService.getAll();
+      this.marinheiros = await marinheirosService.getAll();
+
+      this.loading = false;
     },
-    criarReserva() {
-      this.$router.push("/reservas/nova");
+
+    abrirCriar() {
+      this.isEdit = false;
+      this.reservaAtual = { idBarco: null, idMarinheiro: null, data: null, observacoes: "" };
+      this.modalAberto = true;
     },
-    editarReserva(reserva) {
-      this.$router.push(`/reservas/${reserva.id}`);
+
+    abrirEditar(reserva) {
+      this.isEdit = true;
+      this.reservaAtual = { ...reserva };
+      this.modalAberto = true;
     },
+
+    fecharModal() {
+      this.modalAberto = false;
+    },
+
+    async guardarReserva(reserva) {
+      try {
+        if (this.isEdit) {
+          await reservasService.updateReserva(reserva.ID_RESERVA, reserva);
+          this.$refs.toast.sucesso("Reserva atualizada com sucesso!");
+        } else {
+          await reservasService.createReserva(reserva);
+          this.$refs.toast.sucesso("Reserva criada com sucesso!");
+        }
+
+        this.modalAberto = false;
+        await this.carregarTudo();
+
+      } catch (e) {
+        this.$refs.toast.erro("Ocorreu um erro ao guardar a reserva.");
+      }
+    },
+
     async eliminarReserva(id) {
-      await reservasService.delete(id);
-      this.reservas = this.reservas.filter((r) => r.id !== id);
-    },
-  },
+      try {
+        await reservasService.deleteReserva(id);
+        this.reservas = this.reservas.filter(r => r.ID_RESERVA !== id);
+        this.$refs.toast.sucesso("Reserva eliminada com sucesso!");
+      } catch {
+        this.$refs.toast.erro("Erro ao eliminar reserva.");
+      }
+    }
+  }
 };
 </script>
 
 <style scoped>
-.page-container {
-  padding: 32px;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 24px;
-  color: var(--primary);
-}
-
-/* Barra de pesquisa estilo Booking */
-.search-bar {
-  background: #fff;
-  padding: 16px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-.search-bar input {
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #d1d5db;
-}
-
-.search-bar input:focus {
-  outline: none;
-  border-color: var(--primary);
-}
-
-/* Cards das reservas */
-.reservas-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-}
-
-.reserva-card {
-  background: #fff;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.reserva-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.reserva-header h3 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.reserva-datas {
-  font-size: 14px;
-  color: var(--text-light);
-}
-
-.reserva-info {
-  font-size: 14px;
-  color: var(--text-light);
-}
-
-.reserva-footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: auto;
-}
-
-.delete-btn {
-  background: #d9534f;
-}
-
-.delete-btn:hover {
-  background: #c9302c;
-}
-
-.add-button {
-  margin-top: 32px;
-  background: var(--accent);
-  color: #000;
-  font-weight: 700;
-  padding: 12px 20px;
-  border-radius: var(--radius);
-  border: none;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.add-button:hover {
-  background: #ffcc33;
+.shadow-2 {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
 </style>

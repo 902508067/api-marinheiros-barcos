@@ -1,23 +1,33 @@
 import api from './api';
 
 export default {
-  getMarinheiros() {
-    return api.get('/marinheiros');
+  async getAll() {
+    const res = await api.get('/marinheiros');
+    return res.data;
   },
 
-  getMarinheiro(id) {
-    return api.get(`/marinheiros/${id}`);
+  async getMarinheiros() {
+    const res = await api.get('/marinheiros');
+    return res.data;
   },
 
-  createMarinheiro(data) {
-    return api.post('/marinheiros', data);
+  async getMarinheiro(id) {
+    const res = await api.get(`/marinheiros/${id}`);
+    return res.data;
   },
 
-  updateMarinheiro(id, data) {
-    return api.put(`/marinheiros/${id}`, data);
+  async createMarinheiro(data) {
+    const res = await api.post('/marinheiros', data);
+    return res.data;
   },
 
-  deleteMarinheiro(id) {
-    return api.delete(`/marinheiros/${id}`);
+  async updateMarinheiro(id, data) {
+    const res = await api.put(`/marinheiros/${id}`, data);
+    return res.data;
+  },
+
+  async deleteMarinheiro(id) {
+    const res = await api.delete(`/marinheiros/${id}`);
+    return res.data;
   }
 };

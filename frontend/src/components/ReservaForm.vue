@@ -1,77 +1,107 @@
 <template>
-  <div class="form-container">
-    <h2 class="form-title">{{ isEdit ? "Editar Reserva" : "Criar Reserva" }}</h2>
+  <Card class="shadow-2 p-4 border-round">
+    <h2 class="text-2xl font-bold mb-4">
+      {{ isEdit ? "Editar Reserva" : "Criar Reserva" }}
+    </h2>
 
-    <form @submit.prevent="guardar">
-      <!-- Seleção do Barco -->
-      <div class="form-group">
-        <label>Barco</label>
-        <select v-model="reserva.barcoId" required>
-          <option disabled value="">Selecione um barco</option>
-          <option v-for="barco in barcos" :key="barco.id" :value="barco.id">
-            {{ barco.nome }} — €{{ barco.precoPorDia }}/dia
-          </option>
-        </select>
+    <div class="grid p-fluid">
+
+      <!-- Barco -->
+      <div class="col-12 md:col-6">
+        <label class="font-bold mb-2 block">Barco</label>
+        <Dropdown 
+          v-model="reserva.idBarco"
+          :options="barcos"
+          optionLabel="nome"
+          optionValue="id"
+          placeholder="Selecione o barco"
+          class="w-full"
+        />
       </div>
 
-      <!-- Seleção do Marinheiro -->
-      <div class="form-group">
-        <label>Marinheiro</label>
-        <select v-model="reserva.marinheiroId" required>
-          <option disabled value="">Selecione um marinheiro</option>
-          <option v-for="m in marinheiros" :key="m.id" :value="m.id">
-            {{ m.nome }} ({{ m.experiencia }} anos exp.)
-          </option>
-        </select>
+      <!-- Marinheiro -->
+      <div class="col-12 md:col-6">
+        <label class="font-bold mb-2 block">Marinheiro</label>
+        <Dropdown 
+          v-model="reserva.idMarinheiro"
+          :options="marinheiros"
+          optionLabel="nome"
+          optionValue="id"
+          placeholder="Selecione o marinheiro"
+          class="w-full"
+        />
       </div>
 
-      <!-- Datas -->
-      <div class="form-group">
-        <label>Data de Início</label>
-        <input v-model="reserva.dataInicio" type="date" required />
+      <!-- Data -->
+      <div class="col-12 md:col-6">
+        <label class="font-bold mb-2 block">Data da Reserva</label>
+        <Calendar 
+          v-model="reserva.data"
+          dateFormat="dd/mm/yy"
+          showIcon
+          class="w-full"
+        />
       </div>
 
-      <div class="form-group">
-        <label>Data de Fim</label>
-        <input v-model="reserva.dataFim" type="date" required />
+      <!-- Observações -->
+      <div class="col-12">
+        <label class="font-bold mb-2 block">Observações</label>
+        <InputTextarea 
+          v-model="reserva.observacoes" 
+          rows="4" 
+          autoResize 
+          placeholder="Notas adicionais"
+        />
       </div>
 
-      <!-- Preço total -->
-      <div class="form-group">
-        <label>Preço Total (€)</label>
-        <input v-model.number="reserva.precoTotal" type="number" min="0" required />
-      </div>
+    </div>
 
-      <!-- Botões -->
-      <div class="form-buttons">
-        <button type="button" class="cancel-btn" @click="$emit('cancelar')">
-          Cancelar
-        </button>
+    <!-- Botões -->
+    <div class="mt-4 flex justify-content-end gap-3">
+      <Button 
+        label="Cancelar" 
+        icon="pi pi-times" 
+        class="p-button-secondary"
+        @click="$emit('cancelar')"
+      />
 
-        <button type="submit" class="save-btn">
-          {{ isEdit ? "Guardar Alterações" : "Criar Reserva" }}
-        </button>
-      </div>
-    </form>
-  </div>
+      <Button 
+        :label="isEdit ? 'Guardar Alterações' : 'Criar Reserva'"
+        icon="pi pi-check" 
+        class="p-button-success"
+        @click="guardar"
+      />
+    </div>
+  </Card>
 </template>
 
 <script>
-import barcosService from "../services/barcosService";
-import marinheirosService from "../services/marinheirosService";
+import Card from 'primevue/card';
+import Dropdown from 'primevue/dropdown';
+import Calendar from 'primevue/calendar';
+import InputTextarea from 'primevue/inputtextarea';
+import Button from 'primevue/button';
 
 export default {
   name: "ReservaForm",
 
   props: {
     reservaInicial: Object,
+    barcos: Array,
+    marinheiros: Array
+  },
+
+  components: {
+    Card,
+    Dropdown,
+    Calendar,
+    InputTextarea,
+    Button
   },
 
   data() {
     return {
-      reserva: { ...this.reservaInicial },
-      barcos: [],
-      marinheiros: [],
+      reserva: { ...this.reservaInicial }
     };
   },
 
@@ -79,11 +109,6 @@ export default {
     isEdit() {
       return !!this.reserva.id;
     },
-  },
-
-  async created() {
-    this.barcos = await barcosService.getAll();
-    this.marinheiros = await marinheirosService.getAll();
   },
 
   methods: {
@@ -95,85 +120,7 @@ export default {
 </script>
 
 <style scoped>
-/* Container */
-.form-container {
-  background: #fff;
-  padding: 28px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  max-width: 520px;
-  margin: 0 auto;
-}
-
-.form-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 20px;
-}
-
-/* Grupos */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
-}
-
-label {
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: var(--text);
-}
-
-input,
-select {
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  font-size: 15px;
-  transition: 0.2s;
-}
-
-input:focus,
-select:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(0, 53, 128, 0.2);
-}
-
-/* Botões */
-.form-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.cancel-btn {
-  background: #e5e7eb;
-  color: #000;
-  padding: 10px 16px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.cancel-btn:hover {
-  background: #d1d5db;
-}
-
-.save-btn {
-  background: var(--primary);
-  color: #fff;
-  padding: 10px 18px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.save-btn:hover {
-  background: var(--primary-light);
+.shadow-2 {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
 </style>

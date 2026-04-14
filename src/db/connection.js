@@ -5,8 +5,8 @@ async function init() {
   try {
     await oracledb.createPool({
       user: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      connectString: process.env.DB_CONN
+      password: process.env.DB_PASSWORD,
+      connectString: process.env.DB_CONNECTION
     });
 
     console.log("Ligado à base de dados Oracle!");

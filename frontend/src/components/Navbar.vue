@@ -1,59 +1,71 @@
 <template>
-  <nav class="nav-booking">
-    <div class="nav-left">
-      <span class="logo">BoatBooking</span>
+  <nav class="navbar shadow-2">
+    <div class="navbar-left">
+      <i class="pi pi-compass text-2xl mr-2"></i>
+      <span class="navbar-title">Náutica App</span>
     </div>
 
-    <div class="nav-right">
-      <RouterLink to="/">Dashboard</RouterLink>
-      <RouterLink to="/marinheiros">Marinheiros</RouterLink>
-      <RouterLink to="/barcos">Barcos</RouterLink>
-      <RouterLink to="/reservas">Reservas</RouterLink>
+    <div class="navbar-right">
+      <RouterLink to="/" class="nav-link">
+        <i class="pi pi-home mr-1"></i> Dashboard
+      </RouterLink>
+
+      <RouterLink to="/barcos" class="nav-link">
+        <i class="pi pi-ship mr-1"></i> Barcos
+      </RouterLink>
+
+      <RouterLink to="/marinheiros" class="nav-link">
+        <i class="pi pi-users mr-1"></i> Marinheiros
+      </RouterLink>
+
+      <RouterLink to="/reservas" class="nav-link">
+        <i class="pi pi-calendar mr-1"></i> Reservas
+      </RouterLink>
     </div>
   </nav>
 </template>
 
 <script>
 export default {
-  name: "Navbar",
+  name: "Navbar"
 };
 </script>
 
 <style scoped>
-.nav-booking {
-  background: #003580; /* azul Booking */
-  color: #fff;
-  padding: 14px 32px;
+.navbar {
+  background: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.navbar-left {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.logo {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+.navbar-title {
+  font-size: 1.4rem;
+  font-weight: bold;
 }
 
-.nav-right {
+.navbar-right {
   display: flex;
-  gap: 24px;
+  gap: 1.5rem;
 }
 
-.nav-right a {
-  color: #fff;
+.nav-link {
   text-decoration: none;
+  color: #333;
   font-weight: 500;
-  padding-bottom: 2px;
+  display: flex;
+  align-items: center;
   transition: 0.2s;
 }
 
-.nav-right a:hover {
-  opacity: 0.8;
-}
-
-.nav-right a.router-link-active {
-  border-bottom: 2px solid #fff;
+.nav-link:hover {
+  color: #007ad9;
 }
 </style>

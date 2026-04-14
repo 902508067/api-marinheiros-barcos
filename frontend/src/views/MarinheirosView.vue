@@ -1,151 +1,164 @@
 <template>
-  <div class="page-container">
-    <h1 class="page-title">Marinheiros</h1>
+  <div class="p-4">
+    <h1 class="text-3xl font-bold mb-4">Marinheiros</h1>
 
-    <div class="marinheiros-grid">
-      <div
-        v-for="marinheiro in marinheiros"
-        :key="marinheiro.id"
-        class="marinheiro-card"
+    <!-- LOADING -->
+    <Loading v-if="loading" />
+
+    <div v-else class="card shadow-2 p-3 border-round">
+      <DataTable 
+        :value="marinheiros" 
+        stripedRows 
+        responsiveLayout="scroll"
+        paginator 
+        :rows="5"
+        :rowsPerPageOptions="[5, 10, 20]"
       >
-        <div class="marinheiro-header">
-          <h3>{{ marinheiro.nome }}</h3>
-          <span class="marinheiro-idade">{{ marinheiro.idade }} anos</span>
-        </div>
+        <Column field="ID_MARINHEIRO" header="ID" style="width: 100px"></Column>
+        <Column field="NOME" header="Nome"></Column>
+        <Column field="FUNCAO" header="Função"></Column>
+        <Column field="IDADE" header="Idade"></Column>
 
-        <p class="marinheiro-info">
-          Experiência: <strong>{{ marinheiro.experiencia }} anos</strong>
-        </p>
+        <Column header="Ações" style="width: 150px">
+          <template #body="slotProps">
+            <Button 
+              icon="pi pi-pencil" 
+              class="p-button-rounded p-button-info mr-2"
+              @click="abrirEditar(slotProps.data)"
+            />
+            <Button 
+              icon="pi pi-trash" 
+              class="p-button-rounded p-button-danger"
+              @click="eliminarMarinheiro(slotProps.data.ID_MARINHEIRO)"
+            />
+          </template>
+        </Column>
+      </DataTable>
 
-        <p class="marinheiro-info">
-          Especialidade: <strong>{{ marinheiro.especialidade }}</strong>
-        </p>
-
-        <div class="marinheiro-footer">
-          <button @click="editarMarinheiro(marinheiro)">Editar</button>
-          <button class="delete-btn" @click="eliminarMarinheiro(marinheiro.id)">
-            Eliminar
-          </button>
-        </div>
-      </div>
+      <Button 
+        label="Adicionar Marinheiro" 
+        icon="pi pi-plus" 
+        class="p-button-success mt-4"
+        @click="abrirCriar"
+      />
     </div>
 
-    <button class="add-button" @click="criarMarinheiro">
-      + Adicionar Marinheiro
-    </button>
+    <!-- MODAL -->
+    <Modal 
+      :visivel="modalAberto"
+      :titulo="isEdit ? 'Editar Marinheiro' : 'Criar Marinheiro'"
+      largura="35rem"
+      @fechar="fecharModal"
+      @guardar="guardarMarinheiro"
+    >
+      <MarinheiroForm 
+        :marinheiroInicial="marinheiroAtual"
+        @guardar="guardarMarinheiro"
+        @cancelar="fecharModal"
+      />
+    </Modal>
+
+    <!-- TOAST -->
+    <Mensagem ref="toast" />
   </div>
 </template>
 
 <script>
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Button from 'primevue/button';
+
 import marinheirosService from "../services/marinheirosService";
+
+import Modal from "../components/Modal.vue";
+import MarinheiroForm from "../components/MarinheiroForm.vue";
+import Mensagem from "../components/Mensagem.vue";
+import Loading from "../components/Loading.vue";
 
 export default {
   name: "MarinheirosView",
 
+  components: {
+    DataTable,
+    Column,
+    Button,
+    Modal,
+    MarinheiroForm,
+    Mensagem,
+    Loading
+  },
+
   data() {
     return {
       marinheiros: [],
+      loading: true,
+
+      modalAberto: false,
+      isEdit: false,
+      marinheiroAtual: null
     };
   },
 
   async created() {
-    this.marinheiros = await marinheirosService.getAll();
+    await this.carregarMarinheiros();
   },
 
   methods: {
-    criarMarinheiro() {
-      this.$router.push("/marinheiros/novo");
+    async carregarMarinheiros() {
+      this.loading = true;
+      this.marinheiros = await marinheirosService.getAll();
+      this.loading = false;
     },
-    editarMarinheiro(marinheiro) {
-      this.$router.push(`/marinheiros/${marinheiro.id}`);
+
+    abrirCriar() {
+      this.isEdit = false;
+      this.marinheiroAtual = { nome: "", idade: 18, funcao: "", descricao: "" };
+      this.modalAberto = true;
     },
+
+    abrirEditar(marinheiro) {
+      this.isEdit = true;
+      this.marinheiroAtual = { ...marinheiro };
+      this.modalAberto = true;
+    },
+
+    fecharModal() {
+      this.modalAberto = false;
+    },
+
+    async guardarMarinheiro(marinheiro) {
+      try {
+        if (this.isEdit) {
+          await marinheirosService.updateMarinheiro(marinheiro.ID_MARINHEIRO, marinheiro);
+          this.$refs.toast.sucesso("Marinheiro atualizado com sucesso!");
+        } else {
+          await marinheirosService.createMarinheiro(marinheiro);
+          this.$refs.toast.sucesso("Marinheiro criado com sucesso!");
+        }
+
+        this.modalAberto = false;
+        await this.carregarMarinheiros();
+
+      } catch (e) {
+        this.$refs.toast.erro("Ocorreu um erro ao guardar o marinheiro.");
+      }
+    },
+
     async eliminarMarinheiro(id) {
-      await marinheirosService.delete(id);
-      this.marinheiros = this.marinheiros.filter((m) => m.id !== id);
-    },
-  },
+      try {
+        await marinheirosService.deleteMarinheiro(id);
+        this.marinheiros = this.marinheiros.filter(m => m.ID_MARINHEIRO !== id);
+        this.$refs.toast.sucesso("Marinheiro eliminado com sucesso!");
+      } catch {
+        this.$refs.toast.erro("Erro ao eliminar marinheiro.");
+      }
+    }
+  }
 };
 </script>
 
 <style scoped>
-.page-container {
-  padding: 32px;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 24px;
-  color: var(--primary);
-}
-
-/* GRID */
-.marinheiros-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-}
-
-/* CARD */
-.marinheiro-card {
-  background: #fff;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.marinheiro-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.marinheiro-header h3 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.marinheiro-idade {
-  font-size: 14px;
-  color: var(--text-light);
-}
-
-.marinheiro-info {
-  font-size: 14px;
-  color: var(--text-light);
-}
-
-.marinheiro-footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: auto;
-}
-
-.delete-btn {
-  background: #d9534f;
-}
-
-.delete-btn:hover {
-  background: #c9302c;
-}
-
-.add-button {
-  margin-top: 32px;
-  background: var(--accent);
-  color: #000;
-  font-weight: 700;
-  padding: 12px 20px;
-  border-radius: var(--radius);
-  border: none;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.add-button:hover {
-  background: #ffcc33;
+.shadow-2 {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
 </style>

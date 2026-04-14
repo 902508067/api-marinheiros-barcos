@@ -1,42 +1,37 @@
 <template>
-  <div class="loading-container">
-    <div class="spinner"></div>
-    <p>A carregar...</p>
+  <div class="loading-wrapper">
+    <ProgressSpinner 
+      style="width: 60px; height: 60px" 
+      strokeWidth="4"
+      animationDuration=".8s"
+    />
+    <p class="loading-text">A carregar...</p>
   </div>
 </template>
 
 <script>
+import ProgressSpinner from 'primevue/progressspinner';
+
 export default {
   name: "Loading",
+  components: {
+    ProgressSpinner
+  }
 };
 </script>
 
 <style scoped>
-.loading-container {
+.loading-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 0;
-  color: var(--primary);
-  font-weight: 600;
-  font-size: 16px;
+  padding: 2rem;
 }
 
-/* Spinner estilo Booking */
-.spinner {
-  width: 42px;
-  height: 42px;
-  border: 4px solid #dbeafe; /* azul muito claro */
-  border-top-color: var(--primary); /* azul Booking */
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 12px;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.loading-text {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  color: #555;
 }
 </style>

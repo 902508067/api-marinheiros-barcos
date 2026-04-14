@@ -1,23 +1,33 @@
 import api from './api';
 
 export default {
-  getReservas() {
-    return api.get('/reservas');
+  async getAll() {
+    const res = await api.get('/reservas');
+    return res.data;
   },
 
-  getReserva(id) {
-    return api.get(`/reservas/${id}`);
+  async getReservas() {
+    const res = await api.get('/reservas');
+    return res.data;
   },
 
-  createReserva(data) {
-    return api.post('/reservas', data);
+  async getReserva(id) {
+    const res = await api.get(`/reservas/${id}`);
+    return res.data;
   },
 
-  updateReserva(id, data) {
-    return api.put(`/reservas/${id}`, data);
+  async createReserva(data) {
+    const res = await api.post('/reservas', data);
+    return res.data;
   },
 
-  deleteReserva(id) {
-    return api.delete(`/reservas/${id}`);
+  async updateReserva(id, data) {
+    const res = await api.put(`/reservas/${id}`, data);
+    return res.data;
+  },
+
+  async deleteReserva(id) {
+    const res = await api.delete(`/reservas/${id}`);
+    return res.data;
   }
 };

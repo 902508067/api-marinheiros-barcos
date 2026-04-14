@@ -1,51 +1,107 @@
 <template>
-  <div class="form-container">
-    <h2 class="form-title">{{ isEdit ? "Editar Marinheiro" : "Criar Marinheiro" }}</h2>
+  <Card class="shadow-2 p-4 border-round">
+    <h2 class="text-2xl font-bold mb-4">
+      {{ isEdit ? "Editar Marinheiro" : "Criar Marinheiro" }}
+    </h2>
 
-    <form @submit.prevent="guardar">
-      <div class="form-group">
-        <label>Nome</label>
-        <input v-model="marinheiro.nome" type="text" required />
+    <div class="grid p-fluid">
+
+      <!-- Nome -->
+      <div class="col-12 md:col-6">
+        <label class="font-bold mb-2 block">Nome</label>
+        <InputText v-model="marinheiro.nome" placeholder="Nome do marinheiro" />
       </div>
 
-      <div class="form-group">
-        <label>Idade</label>
-        <input v-model.number="marinheiro.idade" type="number" min="18" required />
+      <!-- Idade -->
+      <div class="col-12 md:col-6">
+        <label class="font-bold mb-2 block">Idade</label>
+        <InputNumber 
+          v-model="marinheiro.idade" 
+          :min="18" 
+          :max="80"
+          placeholder="Idade"
+          inputClass="w-full"
+        />
       </div>
 
-      <div class="form-group">
-        <label>Anos de Experiência</label>
-        <input v-model.number="marinheiro.experiencia" type="number" min="0" required />
+      <!-- Função -->
+      <div class="col-12 md:col-6">
+        <label class="font-bold mb-2 block">Função</label>
+        <Dropdown 
+          v-model="marinheiro.funcao"
+          :options="funcoes"
+          placeholder="Selecione a função"
+          class="w-full"
+        />
       </div>
 
-      <div class="form-group">
-        <label>Especialidade</label>
-        <input v-model="marinheiro.especialidade" type="text" required />
+      <!-- Descrição -->
+      <div class="col-12">
+        <label class="font-bold mb-2 block">Descrição</label>
+        <InputTextarea 
+          v-model="marinheiro.descricao" 
+          rows="4" 
+          autoResize 
+          placeholder="Descrição do marinheiro"
+        />
       </div>
 
-      <div class="form-buttons">
-        <button type="button" class="cancel-btn" @click="$emit('cancelar')">
-          Cancelar
-        </button>
+    </div>
 
-        <button type="submit" class="save-btn">
-          {{ isEdit ? "Guardar Alterações" : "Criar Marinheiro" }}
-        </button>
-      </div>
-    </form>
-  </div>
+    <!-- Botões -->
+    <div class="mt-4 flex justify-content-end gap-3">
+      <Button 
+        label="Cancelar" 
+        icon="pi pi-times" 
+        class="p-button-secondary"
+        @click="$emit('cancelar')"
+      />
+
+      <Button 
+        :label="isEdit ? 'Guardar Alterações' : 'Criar Marinheiro'"
+        icon="pi pi-check" 
+        class="p-button-success"
+        @click="guardar"
+      />
+    </div>
+  </Card>
 </template>
 
 <script>
+import Card from 'primevue/card';
+import InputText from 'primevue/inputtext';
+import InputTextarea from 'primevue/inputtextarea';
+import InputNumber from 'primevue/inputnumber';
+import Dropdown from 'primevue/dropdown';
+import Button from 'primevue/button';
+
 export default {
   name: "MarinheiroForm",
+
   props: {
     marinheiroInicial: Object,
+  },
+
+  components: {
+    Card,
+    InputText,
+    InputTextarea,
+    InputNumber,
+    Dropdown,
+    Button
   },
 
   data() {
     return {
       marinheiro: { ...this.marinheiroInicial },
+
+      funcoes: [
+        "Capitão",
+        "Imediato",
+        "Marinheiro de Convés",
+        "Mecânico Naval",
+        "Técnico de Navegação"
+      ]
     };
   },
 
@@ -64,83 +120,7 @@ export default {
 </script>
 
 <style scoped>
-/* Container */
-.form-container {
-  background: #fff;
-  padding: 28px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  max-width: 520px;
-  margin: 0 auto;
-}
-
-.form-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 20px;
-}
-
-/* Grupos */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
-}
-
-label {
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: var(--text);
-}
-
-input {
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  font-size: 15px;
-  transition: 0.2s;
-}
-
-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(0, 53, 128, 0.2);
-}
-
-/* Botões */
-.form-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.cancel-btn {
-  background: #e5e7eb;
-  color: #000;
-  padding: 10px 16px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.cancel-btn:hover {
-  background: #d1d5db;
-}
-
-.save-btn {
-  background: var(--primary);
-  color: #fff;
-  padding: 10px 18px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.save-btn:hover {
-  background: var(--primary-light);
+.shadow-2 {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
 </style>

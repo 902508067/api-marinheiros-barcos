@@ -10,7 +10,7 @@
 
       <div class="navbar-right">
         <RouterLink to="/" class="nav-link">
-          <i class="pi pi-home mr-1"></i> Dashboard
+          <i class="pi pi-home mr-1"></i> Início
         </RouterLink>
 
         <RouterLink to="/barcos" class="nav-link">

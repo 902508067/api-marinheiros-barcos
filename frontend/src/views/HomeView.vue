@@ -1,45 +1,62 @@
-<script setup>
-import Navbar from '../components/Navbar.vue';
-</script>
-
 <template>
-  <Navbar />
+  <div class="home-container">
+    <h1 class="title">Náutica App</h1>
+    <p class="subtitle">Escolha uma das opções para começar</p>
 
-  <div class="p-4">
-    <div class="text-center mt-6">
-      <h1 class="text-4xl font-bold mb-3">Bem-vindo ao Sistema de Gestão Náutica</h1>
-      <p class="text-lg text-gray-600">
-        Utilize o menu acima para navegar entre Barcos, Marinheiros e Reservas.
-      </p>
-    </div>
-
-    <div class="grid mt-6">
-      <div class="col-12 md:col-4">
-        <div class="card shadow-2 p-4 border-round text-center">
-          <i class="pi pi-ship text-5xl text-blue-500 mb-3"></i>
-          <h3 class="m-0">Gestão de Barcos</h3>
-        </div>
-      </div>
-
-      <div class="col-12 md:col-4">
-        <div class="card shadow-2 p-4 border-round text-center">
-          <i class="pi pi-users text-5xl text-green-500 mb-3"></i>
-          <h3 class="m-0">Gestão de Marinheiros</h3>
-        </div>
-      </div>
-
-      <div class="col-12 md:col-4">
-        <div class="card shadow-2 p-4 border-round text-center">
-          <i class="pi pi-calendar text-5xl text-purple-500 mb-3"></i>
-          <h3 class="m-0">Gestão de Reservas</h3>
-        </div>
-      </div>
+    <div class="buttons">
+      <RouterLink to="/barcos" class="home-btn barcos">Barcos</RouterLink>
+      <RouterLink to="/marinheiros" class="home-btn marinheiros">Marinheiros</RouterLink>
+      <RouterLink to="/reservas" class="home-btn reservas">Reservas</RouterLink>
     </div>
   </div>
 </template>
 
-<style scoped>
-.shadow-2 {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+<style>
+.home-container {
+  text-align: center;
+  margin-top: 5rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #555;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.home-btn {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  text-decoration: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.barcos {
+  background: #007ad9;
+}
+
+.marinheiros {
+  background: #28a745;
+}
+
+.reservas {
+  background: #ff9800;
+}
+
+.home-btn:hover {
+  opacity: 0.85;
 }
 </style>

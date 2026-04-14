@@ -4,13 +4,8 @@
 # Dependências
 node_modules/
 
-# Ambiente
-.env
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
 # Build
 dist/
+
+# Ambiente
+.env

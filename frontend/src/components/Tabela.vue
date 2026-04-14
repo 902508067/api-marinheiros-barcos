@@ -1,64 +1,114 @@
-<script setup>
-const props = defineProps({
-  dados: Array,
-  colunas: Array
-});
+<template>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th v-for="coluna in colunas" :key="coluna">
+            {{ coluna }}
+          </th>
+          <th class="acoes-col">Ações</th>
+        </tr>
+      </thead>
 
-const emit = defineEmits(['delete', 'edit']);
+      <tbody>
+        <tr v-for="item in dados" :key="item.id">
+          <td v-for="coluna in colunas" :key="coluna">
+            {{ item[coluna.toLowerCase()] }}
+          </td>
 
-// Descobre automaticamente qual é a coluna ID
-const getIdKey = () => {
-  const idCol = props.colunas.find(c =>
-    c.key.toUpperCase().includes('ID')
-  );
-  return idCol ? idCol.key : null;
+          <td class="acoes">
+            <button class="edit-btn" @click="$emit('editar', item)">Editar</button>
+            <button class="delete-btn" @click="$emit('eliminar', item.id)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "Tabela",
+  props: {
+    colunas: Array,
+    dados: Array,
+  },
 };
 </script>
 
-<template>
-  <table>
-    <thead>
-      <tr>
-        <th v-for="col in colunas" :key="col.key">{{ col.label }}</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      <tr v-for="item in dados" :key="item[getIdKey()]">
-        <td v-for="col in colunas" :key="col.key">
-          {{ item[col.key] }}
-        </td>
-
-        <td>
-          <button @click="emit('edit', item)">Editar</button>
-          <button @click="emit('delete', item[getIdKey()])">Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</template>
-
 <style scoped>
+.table-wrapper {
+  background: #fff;
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+}
+
+/* Tabela moderna estilo Booking */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  font-size: 15px;
 }
 
-th, td {
-  border: 1px solid #ddd;
-  padding: 10px;
+thead {
+  background: var(--primary);
+  color: #fff;
 }
 
 th {
-  background: #f3f4f6;
+  padding: 14px;
   text-align: left;
+  font-weight: 600;
 }
 
-button {
-  margin-right: 8px;
-  padding: 5px 10px;
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  color: var(--text);
+}
+
+tr:hover td {
+  background: #f3f4f6;
+}
+
+/* Coluna das ações */
+.acoes-col {
+  width: 140px;
+}
+
+.acoes {
+  display: flex;
+  gap: 8px;
+}
+
+/* Botões */
+.edit-btn {
+  background: var(--primary-light);
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
   cursor: pointer;
+  font-size: 13px;
+}
+
+.edit-btn:hover {
+  background: var(--primary);
+}
+
+.delete-btn {
+  background: #d9534f;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.delete-btn:hover {
+  background: #c9302c;
 }
 </style>

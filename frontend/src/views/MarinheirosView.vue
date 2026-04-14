@@ -1,61 +1,151 @@
-<script setup>
-import { ref, onMounted } from 'vue';
-import Navbar from '../components/Navbar.vue';
-import marinheirosService from '../services/marinheirosService';
-import Tabela from '../components/Tabela.vue';
-import Mensagem from '../components/Mensagem.vue';
+<template>
+  <div class="page-container">
+    <h1 class="page-title">Marinheiros</h1>
 
-const marinheiros = ref([]);
-const mensagemTexto = ref('');
-const mensagemTipo = ref('sucesso');
+    <div class="marinheiros-grid">
+      <div
+        v-for="marinheiro in marinheiros"
+        :key="marinheiro.id"
+        class="marinheiro-card"
+      >
+        <div class="marinheiro-header">
+          <h3>{{ marinheiro.nome }}</h3>
+          <span class="marinheiro-idade">{{ marinheiro.idade }} anos</span>
+        </div>
 
-const mostrarMensagem = (texto, tipo = 'sucesso') => {
-  mensagemTexto.value = texto;
-  mensagemTipo.value = tipo;
-};
+        <p class="marinheiro-info">
+          Experiência: <strong>{{ marinheiro.experiencia }} anos</strong>
+        </p>
 
-const carregarDados = async () => {
-  try {
-    const res = await marinheirosService.getMarinheiros();
-    marinheiros.value = res.data;
-  } catch (e) {
-    mostrarMensagem('Erro ao carregar marinheiros.', 'erro');
-  }
-};
+        <p class="marinheiro-info">
+          Especialidade: <strong>{{ marinheiro.especialidade }}</strong>
+        </p>
 
-onMounted(carregarDados);
+        <div class="marinheiro-footer">
+          <button @click="editarMarinheiro(marinheiro)">Editar</button>
+          <button class="delete-btn" @click="eliminarMarinheiro(marinheiro.id)">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
 
-const eliminar = async (id) => {
-  try {
-    await marinheirosService.deleteMarinheiro(id);
-    mostrarMensagem('Marinheiro eliminado com sucesso!');
-    await carregarDados();
-  } catch (e) {
-    mostrarMensagem('Erro ao eliminar marinheiro.', 'erro');
-  }
+    <button class="add-button" @click="criarMarinheiro">
+      + Adicionar Marinheiro
+    </button>
+  </div>
+</template>
+
+<script>
+import marinheirosService from "../services/marinheirosService";
+
+export default {
+  name: "MarinheirosView",
+
+  data() {
+    return {
+      marinheiros: [],
+    };
+  },
+
+  async created() {
+    this.marinheiros = await marinheirosService.getAll();
+  },
+
+  methods: {
+    criarMarinheiro() {
+      this.$router.push("/marinheiros/novo");
+    },
+    editarMarinheiro(marinheiro) {
+      this.$router.push(`/marinheiros/${marinheiro.id}`);
+    },
+    async eliminarMarinheiro(id) {
+      await marinheirosService.delete(id);
+      this.marinheiros = this.marinheiros.filter((m) => m.id !== id);
+    },
+  },
 };
 </script>
 
-<template>
-  <!-- Navbar já está no App.vue, por isso NÃO repetimos aqui -->
+<style scoped>
+.page-container {
+  padding: 32px;
+}
 
-  <div>
-    <Mensagem
-      v-if="mensagemTexto"
-      :texto="mensagemTexto"
-      :tipo="mensagemTipo"
-    />
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--primary);
+}
 
-    <h1>Marinheiros</h1>
+/* GRID */
+.marinheiros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
 
-    <Tabela
-      :dados="marinheiros"
-      :colunas="[
-        { key: 'ID_MARINHEIRO', label: 'ID' },
-        { key: 'NOME', label: 'Nome' },
-        { key: 'IDADE', label: 'Idade' }
-      ]"
-      @delete="eliminar"
-    />
-  </div>
-</template>
+/* CARD */
+.marinheiro-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.marinheiro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.marinheiro-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.marinheiro-idade {
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.marinheiro-info {
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.marinheiro-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.delete-btn {
+  background: #d9534f;
+}
+
+.delete-btn:hover {
+  background: #c9302c;
+}
+
+.add-button {
+  margin-top: 32px;
+  background: var(--accent);
+  color: #000;
+  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.add-button:hover {
+  background: #ffcc33;
+}
+</style>

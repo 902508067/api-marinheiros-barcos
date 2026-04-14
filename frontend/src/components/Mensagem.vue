@@ -1,59 +1,99 @@
-<script setup>
-import { ref, watch } from 'vue';
-
-const props = defineProps({
-  tipo: { type: String, default: "sucesso" }, // "sucesso" ou "erro"
-  texto: { type: String, required: true },
-  duracao: { type: Number, default: 3000 }
-});
-
-const visivel = ref(true);
-
-watch(() => props.texto, () => {
-  visivel.value = true;
-  setTimeout(() => visivel.value = false, props.duracao);
-});
-</script>
-
 <template>
-  <transition name="fade">
-    <div
-      v-if="visivel"
-      class="mensagem"
-      :class="tipo === 'erro' ? 'erro' : 'sucesso'"
-    >
-      {{ texto }}
-    </div>
-  </transition>
+  <div class="mensagem" :class="tipo" v-if="visivel">
+    <span class="icone">{{ icone }}</span>
+    <span class="texto">{{ texto }}</span>
+    <button class="fechar" @click="$emit('fechar')">×</button>
+  </div>
 </template>
+
+<script>
+export default {
+  name: "Mensagem",
+
+  props: {
+    texto: String,
+    tipo: {
+      type: String,
+      default: "info", // "sucesso", "erro", "info"
+    },
+    visivel: {
+      type: Boolean,
+      default: true,
+    },
+  },
+
+  computed: {
+    icone() {
+      switch (this.tipo) {
+        case "sucesso":
+          return "✔️";
+        case "erro":
+          return "⚠️";
+        default:
+          return "ℹ️";
+      }
+    },
+  },
+};
+</script>
 
 <style scoped>
 .mensagem {
-  padding: 12px 16px;
-  margin-bottom: 15px;
-  border-radius: 6px;
-  font-weight: bold;
-  color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  animation: fadeIn 0.25s ease-out;
+  position: relative;
 }
 
 /* Tipos */
 .sucesso {
-  background-color: #22c55e; /* verde */
+  background: #d1fae5;
+  color: #065f46;
+  border-left: 4px solid #10b981;
 }
 
 .erro {
-  background-color: #ef4444; /* vermelho */
+  background: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
 }
 
-/* Animação */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.4s;
+.info {
+  background: #dbeafe;
+  color: #1e3a8a;
+  border-left: 4px solid #3b82f6;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+/* Ícone */
+.icone {
+  font-size: 20px;
+}
+
+/* Botão fechar */
+.fechar {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: inherit;
+  padding: 0;
+}
+
+.fechar:hover {
+  opacity: 0.7;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

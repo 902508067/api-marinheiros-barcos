@@ -1,130 +1,179 @@
-<script setup>
-import { ref, watch, onMounted } from 'vue';
-import reservasService from '../services/reservasService';
-import barcosService from '../services/barcosService';
-import marinheirosService from '../services/marinheirosService';
+<template>
+  <div class="form-container">
+    <h2 class="form-title">{{ isEdit ? "Editar Reserva" : "Criar Reserva" }}</h2>
 
-const props = defineProps({
-  reserva: {
-    type: Object,
-    default: null
-  }
-});
+    <form @submit.prevent="guardar">
+      <!-- Seleção do Barco -->
+      <div class="form-group">
+        <label>Barco</label>
+        <select v-model="reserva.barcoId" required>
+          <option disabled value="">Selecione um barco</option>
+          <option v-for="barco in barcos" :key="barco.id" :value="barco.id">
+            {{ barco.nome }} — €{{ barco.precoPorDia }}/dia
+          </option>
+        </select>
+      </div>
 
-const emit = defineEmits(['reservaCriada', 'reservaAtualizada']);
+      <!-- Seleção do Marinheiro -->
+      <div class="form-group">
+        <label>Marinheiro</label>
+        <select v-model="reserva.marinheiroId" required>
+          <option disabled value="">Selecione um marinheiro</option>
+          <option v-for="m in marinheiros" :key="m.id" :value="m.id">
+            {{ m.nome }} ({{ m.experiencia }} anos exp.)
+          </option>
+        </select>
+      </div>
 
-const id_marinheiro = ref('');
-const id_barco = ref('');
-const data_inicio = ref('');
-const data_fim = ref('');
+      <!-- Datas -->
+      <div class="form-group">
+        <label>Data de Início</label>
+        <input v-model="reserva.dataInicio" type="date" required />
+      </div>
 
-const marinheiros = ref([]);
-const barcos = ref([]);
+      <div class="form-group">
+        <label>Data de Fim</label>
+        <input v-model="reserva.dataFim" type="date" required />
+      </div>
 
-const erro = ref('');
+      <!-- Preço total -->
+      <div class="form-group">
+        <label>Preço Total (€)</label>
+        <input v-model.number="reserva.precoTotal" type="number" min="0" required />
+      </div>
 
-onMounted(async () => {
-  marinheiros.value = (await marinheirosService.getMarinheiros()).data;
-  barcos.value = (await barcosService.getBarcos()).data;
-});
+      <!-- Botões -->
+      <div class="form-buttons">
+        <button type="button" class="cancel-btn" @click="$emit('cancelar')">
+          Cancelar
+        </button>
 
-// Preencher o formulário quando entra em modo edição
-watch(
-  () => props.reserva,
-  (nova) => {
-    if (nova) {
-      id_marinheiro.value = nova.id_marinheiro;
-      id_barco.value = nova.id_barco;
-      data_inicio.value = nova.data_inicio;
-      data_fim.value = nova.data_fim;
-    } else {
-      id_marinheiro.value = '';
-      id_barco.value = '';
-      data_inicio.value = '';
-      data_fim.value = '';
-    }
+        <button type="submit" class="save-btn">
+          {{ isEdit ? "Guardar Alterações" : "Criar Reserva" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</template>
+
+<script>
+import barcosService from "../services/barcosService";
+import marinheirosService from "../services/marinheirosService";
+
+export default {
+  name: "ReservaForm",
+
+  props: {
+    reservaInicial: Object,
   },
-  { immediate: true }
-);
 
-const validar = () => {
-  erro.value = '';
+  data() {
+    return {
+      reserva: { ...this.reservaInicial },
+      barcos: [],
+      marinheiros: [],
+    };
+  },
 
-  if (!id_marinheiro.value) {
-    erro.value = 'Selecione um marinheiro.';
-    return false;
-  }
+  computed: {
+    isEdit() {
+      return !!this.reserva.id;
+    },
+  },
 
-  if (!id_barco.value) {
-    erro.value = 'Selecione um barco.';
-    return false;
-  }
+  async created() {
+    this.barcos = await barcosService.getAll();
+    this.marinheiros = await marinheirosService.getAll();
+  },
 
-  if (!data_inicio.value || !data_fim.value) {
-    erro.value = 'Preencha ambas as datas.';
-    return false;
-  }
-
-  if (data_inicio.value > data_fim.value) {
-    erro.value = 'A data de início não pode ser depois da data de fim.';
-    return false;
-  }
-
-  return true;
-};
-
-const guardar = async () => {
-  if (!validar()) return;
-
-  const payload = {
-    id_marinheiro: id_marinheiro.value,
-    id_barco: id_barco.value,
-    data_inicio: data_inicio.value,
-    data_fim: data_fim.value
-  };
-
-  if (props.reserva) {
-    await reservasService.updateReserva(props.reserva.id_reserva, payload);
-    emit('reservaAtualizada');
-  } else {
-    await reservasService.createReserva(payload);
-    emit('reservaCriada');
-  }
+  methods: {
+    guardar() {
+      this.$emit("guardar", this.reserva);
+    },
+  },
 };
 </script>
 
-<template>
-  <form @submit.prevent="guardar">
-    <h3>{{ reserva ? "Editar Reserva" : "Criar Reserva" }}</h3>
+<style scoped>
+/* Container */
+.form-container {
+  background: #fff;
+  padding: 28px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  max-width: 520px;
+  margin: 0 auto;
+}
 
-    <p v-if="erro" style="color: red; font-weight: bold;">
-      {{ erro }}
-    </p>
+.form-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 20px;
+}
 
-    <label>Marinheiro:</label>
-    <select v-model="id_marinheiro">
-      <option disabled value="">Selecione</option>
-      <option v-for="m in marinheiros" :key="m.id_marinheiro" :value="m.id_marinheiro">
-        {{ m.nome }}
-      </option>
-    </select>
+/* Grupos */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
 
-    <label>Barco:</label>
-    <select v-model="id_barco">
-      <option disabled value="">Selecione</option>
-      <option v-for="b in barcos" :key="b.id_barco" :value="b.id_barco">
-        {{ b.nome }}
-      </option>
-    </select>
+label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
 
-    <label>Data início:</label>
-    <input type="date" v-model="data_inicio" />
+input,
+select {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 15px;
+  transition: 0.2s;
+}
 
-    <label>Data fim:</label>
-    <input type="date" v-model="data_fim" />
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0, 53, 128, 0.2);
+}
 
-    <button type="submit">
-      {{ reserva ? "Guardar Alterações" : "Criar Reserva" }}
-    </button>
-  </form>
-</template>
+/* Botões */
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cancel-btn {
+  background: #e5e7eb;
+  color: #000;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.cancel-btn:hover {
+  background: #d1d5db;
+}
+
+.save-btn {
+  background: var(--primary);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.save-btn:hover {
+  background: var(--primary-light);
+}
+</style>

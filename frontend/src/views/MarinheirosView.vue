@@ -4,6 +4,7 @@
 
     <form @submit.prevent="guardar">
       <input v-model="form.nome" placeholder="Nome" required />
+      <input v-model="form.classificacao" type="number" placeholder="Classificação" required />
       <input v-model="form.idade" type="number" placeholder="Idade" required />
 
       <button type="submit">
@@ -17,6 +18,7 @@
         <tr>
           <th>ID</th>
           <th>Nome</th>
+          <th>Classificação</th>
           <th>Idade</th>
           <th>Ações</th>
         </tr>
@@ -26,6 +28,7 @@
         <tr v-for="m in marinheiros" :key="m.ID_MARINHEIRO || m.id_marinheiro">
           <td>{{ m.ID_MARINHEIRO || m.id_marinheiro }}</td>
           <td>{{ m.NOME || m.nome }}</td>
+          <td>{{ m.CLASSIFICACAO || m.classificacao }}</td>
           <td>{{ m.IDADE || m.idade }}</td>
 
           <td>
@@ -45,7 +48,7 @@ export default {
   data() {
     return {
       marinheiros: [],
-      form: { nome: "", idade: "" },
+      form: { nome: "", classificacao: "", idade: "" },
       editId: null
     };
   },
@@ -63,12 +66,13 @@ export default {
     editar(m) {
       this.editId = m.ID_MARINHEIRO || m.id_marinheiro;
       this.form.nome = m.NOME || m.nome;
+      this.form.classificacao = m.CLASSIFICACAO || m.classificacao;
       this.form.idade = m.IDADE || m.idade;
     },
 
     cancelarEdicao() {
       this.editId = null;
-      this.form = { nome: "", idade: "" };
+      this.form = { nome: "", classificacao: "", idade: "" };
     },
 
     async guardar() {

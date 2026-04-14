@@ -37,15 +37,15 @@
       </thead>
 
       <tbody>
-        <tr v-for="r in reservas" :key="r.ID_RESERVA || r.id_reserva">
-          <td>{{ r.ID_RESERVA || r.id_reserva }}</td>
-          <td>{{ r.ID_BARCO || r.id_barco }}</td>
-          <td>{{ r.ID_MARINHEIRO || r.id_marinheiro }}</td>
-          <td>{{ formatarData(r.DATA || r.data) }}</td>
+        <tr v-for="r in reservasOrdenadas" :key="r.id_reserva">
+          <td>{{ r.id_reserva }}</td>
+          <td>{{ nomeBarco(r.id_barco) }}</td>
+          <td>{{ nomeMarinheiro(r.id_marinheiro) }}</td>
+          <td>{{ r.data.substring(0, 10) }}</td>
 
           <td>
             <button @click="editar(r)">Editar</button>
-            <button @click="eliminar(r.ID_RESERVA || r.id_reserva)">Eliminar</button>
+            <button @click="eliminar(r.id_reserva)">Eliminar</button>
           </td>
         </tr>
       </tbody>
@@ -73,22 +73,40 @@ export default {
     await this.carregarTudo();
   },
 
+  computed: {
+    reservasOrdenadas() {
+      return [...this.reservas].sort((a, b) => a.data.localeCompare(b.data));
+    }
+  },
+
   methods: {
-    async carregarTudo() {
-      this.reservas = (await reservasService.getAll()).data;
-      this.barcos = (await barcosService.getAll()).data;
-      this.marinheiros = (await marinheirosService.getAll()).data;
+    normalizar(obj) {
+      const novo = {};
+      for (const k in obj) novo[k.toLowerCase()] = obj[k];
+      return novo;
     },
 
-    formatarData(d) {
-      return d ? d.substring(0, 10) : "";
+    async carregarTudo() {
+      this.reservas = (await reservasService.getAll()).data.map(r => this.normalizar(r));
+      this.barcos = (await barcosService.getAll()).data.map(b => this.normalizar(b));
+      this.marinheiros = (await marinheirosService.getAll()).data.map(m => this.normalizar(m));
+    },
+
+    nomeBarco(id) {
+      const b = this.barcos.find(x => x.id_barco == id);
+      return b ? b.nome : "—";
+    },
+
+    nomeMarinheiro(id) {
+      const m = this.marinheiros.find(x => x.id_marinheiro == id);
+      return m ? m.nome : "—";
     },
 
     editar(r) {
-      this.editId = r.ID_RESERVA || r.id_reserva;
-      this.form.id_barco = r.ID_BARCO || r.id_barco;
-      this.form.id_marinheiro = r.ID_MARINHEIRO || r.id_marinheiro;
-      this.form.data = this.formatarData(r.DATA || r.data);
+      this.editId = r.id_reserva;
+      this.form.id_barco = r.id_barco;
+      this.form.id_marinheiro = r.id_marinheiro;
+      this.form.data = r.data.substring(0, 10);
     },
 
     cancelarEdicao() {
